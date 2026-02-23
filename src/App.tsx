@@ -10,6 +10,7 @@ import NotasList from "./pages/NotasList";
 import AddNota from "./pages/AddNota";
 import Relatorios from "./pages/Relatorios";
 import Alertas from "./pages/Alertas";
+import InstallPage from "./pages/InstallPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
                 <Route path="/adicionar" element={<AddNota />} />
                 <Route path="/relatorios" element={<Relatorios />} />
                 <Route path="/alertas" element={<Alertas />} />
+                <Route path="/instalar" element={<InstallPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </AppLayout>
