@@ -7,14 +7,11 @@ import { Sparkles } from "lucide-react";
 
 const KEYWORDS_SETOR: Record<string, string[]> = {
   TI: ["software", "licença", "computador", "sistema", "servidor", "cloud", "tecnologia", "ti"],
-  Marketing: ["campanha", "publicidade", "anúncio", "marketing", "mídia", "propaganda"],
   "RH": ["salário", "folha", "benefício", "treinamento", "rh", "recursos humanos"],
-  Logística: ["frete", "transporte", "entrega", "logística", "envio"],
   Manutenção: ["limpeza", "manutenção", "reparo", "conserto", "pintura"],
   Administrativo: ["escritório", "material", "papelaria", "expediente"],
-  Financeiro: ["contábil", "auditoria", "consultoria financeira", "fiscal"],
-  Comercial: ["venda", "comissão", "cliente", "comercial"],
-  Operações: ["produção", "operação", "fábrica", "manufatura"],
+  Bar: ["Bebidas", "Comida", "Café", "Chocolate", "Salgadinho"],
+  Escritorio: ["Caneto", "Papel"],
   Jurídico: ["advocacia", "jurídico", "contrato", "legal"],
 };
 
