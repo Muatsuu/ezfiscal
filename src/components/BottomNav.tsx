@@ -13,7 +13,7 @@ const BottomNav = () => {
   const location = useLocation();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-md safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-md" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <div className="flex items-center justify-around py-2 px-2 max-w-lg mx-auto">
         {navItems.map(({ to, icon: Icon, label }) => {
           const isActive = location.pathname === to;
