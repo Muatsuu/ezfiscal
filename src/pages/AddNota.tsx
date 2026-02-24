@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNotas } from "@/contexts/NFContext";
-import { SETORES, NotaFiscal } from "@/types/notaFiscal";
+import { SETORES } from "@/types/notaFiscal";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Sparkles } from "lucide-react";
@@ -42,24 +42,23 @@ const AddNota = () => {
   });
 
   const [sugestao, setSugestao] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleDescricaoChange = (value: string) => {
-    setForm((f) => {
-      const s = sugerirSetor(value);
-      return { ...f, descricao: value, ...(s ? { setor: s } : {}) };
-    });
-    setSugestao(sugerirSetor(value));
+    const s = sugerirSetor(value);
+    setForm((f) => ({ ...f, descricao: value, ...(s ? { setor: s } : {}) }));
+    setSugestao(s);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.numero || !form.fornecedor || !form.valor || !form.setor || !form.dataEmissao || !form.dataVencimento) {
       toast.error("Preencha todos os campos obrigatórios");
       return;
     }
 
-    const nota: NotaFiscal = {
-      id: crypto.randomUUID(),
+    setSubmitting(true);
+    await addNota({
       numero: form.numero,
       tipo: form.tipo,
       fornecedor: form.fornecedor,
@@ -69,9 +68,8 @@ const AddNota = () => {
       dataVencimento: form.dataVencimento,
       status: "pendente",
       descricao: form.descricao,
-    };
-
-    addNota(nota);
+    });
+    setSubmitting(false);
     toast.success("Nota fiscal adicionada!");
     navigate("/notas");
   };
@@ -179,9 +177,10 @@ const AddNota = () => {
 
         <button
           type="submit"
-          className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform"
+          disabled={submitting}
+          className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform disabled:opacity-50"
         >
-          Adicionar Nota Fiscal
+          {submitting ? "Salvando..." : "Adicionar Nota Fiscal"}
         </button>
       </form>
     </div>
