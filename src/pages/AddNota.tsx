@@ -44,16 +44,11 @@ const AddNota = () => {
   const [sugestao, setSugestao] = useState<string | null>(null);
 
   const handleDescricaoChange = (value: string) => {
-    setForm((f) => ({ ...f, descricao: value }));
-    const s = sugerirSetor(value);
-    setSugestao(s);
-  };
-
-  const aplicarSugestao = () => {
-    if (sugestao) {
-      setForm((f) => ({ ...f, setor: sugestao }));
-      setSugestao(null);
-    }
+    setForm((f) => {
+      const s = sugerirSetor(value);
+      return { ...f, descricao: value, ...(s ? { setor: s } : {}) };
+    });
+    setSugestao(sugerirSetor(value));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -139,15 +134,11 @@ const AddNota = () => {
             rows={2}
             className={inputClass + " resize-none"}
           />
-          {sugestao && !form.setor && (
-            <button
-              type="button"
-              onClick={aplicarSugestao}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent/10 text-accent text-xs font-medium animate-fade-in"
-            >
+          {sugestao && (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent/10 text-accent text-xs font-medium animate-fade-in">
               <Sparkles className="w-3 h-3" />
-              Sugestão: {sugestao} — Aplicar?
-            </button>
+              Setor sugerido: {sugestao} ✓
+            </div>
           )}
         </div>
 
@@ -166,22 +157,22 @@ const AddNota = () => {
         </select>
 
         <div className="grid grid-cols-2 gap-3">
-          <div>
+          <div className="min-w-0">
             <label className="text-xs text-muted-foreground mb-1 block">Emissão *</label>
             <input
               type="date"
               value={form.dataEmissao}
               onChange={(e) => setForm((f) => ({ ...f, dataEmissao: e.target.value }))}
-              className={inputClass}
+              className={inputClass + " w-full min-w-0 text-xs"}
             />
           </div>
-          <div>
+          <div className="min-w-0">
             <label className="text-xs text-muted-foreground mb-1 block">Vencimento *</label>
             <input
               type="date"
               value={form.dataVencimento}
               onChange={(e) => setForm((f) => ({ ...f, dataVencimento: e.target.value }))}
-              className={inputClass}
+              className={inputClass + " w-full min-w-0 text-xs"}
             />
           </div>
         </div>
