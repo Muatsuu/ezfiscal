@@ -1,20 +1,44 @@
 import { useNotas } from "@/contexts/NFContext";
-import { useState } from "react";
-import { Search, Filter, Trash2 } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Search, Filter, Trash2, SlidersHorizontal, X } from "lucide-react";
+import { SETORES } from "@/types/notaFiscal";
 
 const NotasList = () => {
   const { notas, removeNota, updateNota } = useNotas();
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("todos");
+  const [filterSetor, setFilterSetor] = useState<string>("todos");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const filtered = notas.filter((n) => {
-    const matchesSearch =
-      n.fornecedor.toLowerCase().includes(search.toLowerCase()) ||
-      n.numero.toLowerCase().includes(search.toLowerCase()) ||
-      n.setor.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = filterStatus === "todos" || n.status === filterStatus;
-    return matchesSearch && matchesStatus;
-  });
+  const filtered = useMemo(() => {
+    return notas.filter((n) => {
+      const matchesSearch =
+        n.fornecedor.toLowerCase().includes(search.toLowerCase()) ||
+        n.numero.toLowerCase().includes(search.toLowerCase());
+      const matchesStatus = filterStatus === "todos" || n.status === filterStatus;
+      const matchesSetor = filterSetor === "todos" || n.setor === filterSetor;
+      const matchesDateFrom = !dateFrom || n.dataEmissao >= dateFrom;
+      const matchesDateTo = !dateTo || n.dataEmissao <= dateTo;
+      return matchesSearch && matchesStatus && matchesSetor && matchesDateFrom && matchesDateTo;
+    });
+  }, [notas, search, filterStatus, filterSetor, dateFrom, dateTo]);
+
+  const activeFiltersCount = [
+    filterStatus !== "todos",
+    filterSetor !== "todos",
+    !!dateFrom,
+    !!dateTo,
+  ].filter(Boolean).length;
+
+  const clearFilters = () => {
+    setFilterStatus("todos");
+    setFilterSetor("todos");
+    setDateFrom("");
+    setDateTo("");
+    setSearch("");
+  };
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
@@ -26,23 +50,43 @@ const NotasList = () => {
     { value: "vencida", label: "Vencidas" },
   ];
 
+  const inputClass =
+    "w-full px-3 py-2.5 rounded-xl bg-secondary text-foreground text-sm border-0 outline-none focus:ring-2 focus:ring-primary/30 transition-all";
+
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold text-foreground">Notas Fiscais</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold text-foreground">Notas Fiscais</h2>
+        <button
+          onClick={() => setShowAdvanced(!showAdvanced)}
+          className={`relative p-2 rounded-xl transition-all ${
+            showAdvanced || activeFiltersCount > 0
+              ? "bg-primary text-primary-foreground"
+              : "bg-secondary text-secondary-foreground"
+          }`}
+        >
+          <SlidersHorizontal className="w-4 h-4" />
+          {activeFiltersCount > 0 && (
+            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] flex items-center justify-center font-bold">
+              {activeFiltersCount}
+            </span>
+          )}
+        </button>
+      </div>
 
       {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <input
           type="text"
-          placeholder="Buscar por fornecedor, número ou setor..."
+          placeholder="Buscar por fornecedor ou número..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full pl-10 pr-4 py-3 rounded-xl bg-secondary text-foreground text-sm placeholder:text-muted-foreground border-0 outline-none focus:ring-2 focus:ring-primary/30 transition-all"
         />
       </div>
 
-      {/* Filters */}
+      {/* Status Filters */}
       <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
         {statusFilters.map((f) => (
           <button
@@ -58,6 +102,60 @@ const NotasList = () => {
           </button>
         ))}
       </div>
+
+      {/* Advanced Filters */}
+      {showAdvanced && (
+        <div className="glass-card rounded-xl p-4 space-y-3 animate-fade-in">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-foreground">Filtros avançados</span>
+            {activeFiltersCount > 0 && (
+              <button onClick={clearFilters} className="text-xs text-destructive flex items-center gap-1">
+                <X className="w-3 h-3" /> Limpar
+              </button>
+            )}
+          </div>
+
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">Setor</label>
+            <select
+              value={filterSetor}
+              onChange={(e) => setFilterSetor(e.target.value)}
+              className={inputClass + " appearance-none"}
+            >
+              <option value="todos">Todos os setores</option>
+              {SETORES.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Emissão de</label>
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className={inputClass + " text-xs"}
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Até</label>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className={inputClass + " text-xs"}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Results count */}
+      <p className="text-xs text-muted-foreground">
+        {filtered.length} nota{filtered.length !== 1 ? "s" : ""} encontrada{filtered.length !== 1 ? "s" : ""}
+      </p>
 
       {/* List */}
       <div className="space-y-3">
