@@ -2,6 +2,20 @@ import { useNotas } from "@/contexts/NFContext";
 import { useMemo } from "react";
 import { TrendingUp, TrendingDown, FileText, AlertTriangle, DollarSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend,
+} from "recharts";
+
+const CHART_COLORS = [
+  "hsl(215, 80%, 48%)",
+  "hsl(170, 65%, 42%)",
+  "hsl(38, 92%, 50%)",
+  "hsl(280, 60%, 55%)",
+  "hsl(0, 72%, 55%)",
+  "hsl(200, 70%, 50%)",
+  "hsl(120, 50%, 45%)",
+];
 
 const Dashboard = () => {
   const { notas } = useNotas();
@@ -22,21 +36,54 @@ const Dashboard = () => {
       return venc <= threeDaysFromNow && venc >= today;
     });
 
-    // Gastos por setor
-    const porSetor = notas.reduce((acc, n) => {
+    // Gastos por setor (bar chart data)
+    const porSetorMap = notas.reduce((acc, n) => {
       acc[n.setor] = (acc[n.setor] || 0) + n.valor;
       return acc;
     }, {} as Record<string, number>);
 
-    const setoresOrdenados = Object.entries(porSetor)
+    const porSetorData = Object.entries(porSetorMap)
       .sort(([, a], [, b]) => b - a)
-      .slice(0, 5);
+      .map(([setor, valor]) => ({ setor, valor }));
 
-    return { total, pendentes, vencidas, pagas, aVencer, setoresOrdenados };
+    // Evolução mensal (line chart data)
+    const porMesMap = notas.reduce((acc, n) => {
+      const mes = n.dataEmissao.slice(0, 7); // YYYY-MM
+      acc[mes] = (acc[mes] || 0) + n.valor;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const evolucaoMensal = Object.entries(porMesMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([mes, valor]) => ({
+        mes: mes.split("-").reverse().join("/"), // MM/YYYY
+        valor,
+      }));
+
+    // Status distribution (pie chart)
+    const statusData = [
+      { name: "Pendentes", value: pendentes.length, color: "hsl(38, 92%, 50%)" },
+      { name: "Pagas", value: pagas.length, color: "hsl(152, 60%, 42%)" },
+      { name: "Vencidas", value: vencidas.length, color: "hsl(0, 72%, 55%)" },
+    ].filter((d) => d.value > 0);
+
+    return { total, pendentes, vencidas, pagas, aVencer, porSetorData, evolucaoMensal, statusData };
   }, [notas]);
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload?.length) {
+      return (
+        <div className="bg-card border border-border rounded-lg p-2 shadow-lg text-xs">
+          <p className="font-medium text-foreground">{label}</p>
+          <p className="text-primary font-semibold">{formatCurrency(payload[0].value)}</p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <div className="space-y-5">
@@ -85,32 +132,105 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Gastos por Setor */}
+      {/* Gastos por Setor - Bar Chart */}
       <div className="glass-card rounded-2xl p-5">
         <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-accent" />
           Gastos por Setor
         </h2>
-        <div className="space-y-3">
-          {stats.setoresOrdenados.map(([setor, valor]) => {
-            const maxVal = stats.setoresOrdenados[0]?.[1] || 1;
-            const pct = ((valor as number) / (maxVal as number)) * 100;
-            return (
-              <div key={setor} className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-medium text-foreground">{setor}</span>
-                  <span className="text-muted-foreground">{formatCurrency(valor as number)}</span>
+        {stats.porSetorData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={stats.porSetorData} layout="vertical" margin={{ left: 10, right: 10 }}>
+              <XAxis type="number" hide />
+              <YAxis
+                dataKey="setor"
+                type="category"
+                width={100}
+                tick={{ fontSize: 11, fill: "hsl(215, 10%, 50%)" }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Bar dataKey="valor" radius={[0, 6, 6, 0]} barSize={18}>
+                {stats.porSetorData.map((_, index) => (
+                  <Cell key={index} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <p className="text-xs text-muted-foreground text-center py-8">Sem dados</p>
+        )}
+      </div>
+
+      {/* Evolução Mensal - Line Chart */}
+      <div className="glass-card rounded-2xl p-5">
+        <h2 className="text-sm font-semibold text-foreground mb-4">📈 Evolução Mensal</h2>
+        {stats.evolucaoMensal.length > 1 ? (
+          <ResponsiveContainer width="100%" height={200}>
+            <LineChart data={stats.evolucaoMensal} margin={{ left: 0, right: 10 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 20%, 90%)" />
+              <XAxis
+                dataKey="mes"
+                tick={{ fontSize: 10, fill: "hsl(215, 10%, 50%)" }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis hide />
+              <Tooltip content={<CustomTooltip />} />
+              <Line
+                type="monotone"
+                dataKey="valor"
+                stroke="hsl(215, 80%, 48%)"
+                strokeWidth={2.5}
+                dot={{ r: 4, fill: "hsl(215, 80%, 48%)" }}
+                activeDot={{ r: 6 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        ) : (
+          <p className="text-xs text-muted-foreground text-center py-8">
+            {stats.evolucaoMensal.length === 1 ? "Precisa de mais de 1 mês para exibir" : "Sem dados"}
+          </p>
+        )}
+      </div>
+
+      {/* Status - Pie Chart */}
+      <div className="glass-card rounded-2xl p-5">
+        <h2 className="text-sm font-semibold text-foreground mb-4">📊 Notas por Status</h2>
+        {stats.statusData.length > 0 ? (
+          <div className="flex items-center gap-4">
+            <ResponsiveContainer width="50%" height={160}>
+              <PieChart>
+                <Pie
+                  data={stats.statusData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={35}
+                  outerRadius={65}
+                  paddingAngle={3}
+                  dataKey="value"
+                  stroke="none"
+                >
+                  {stats.statusData.map((entry, index) => (
+                    <Cell key={index} fill={entry.color} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="flex-1 space-y-2">
+              {stats.statusData.map((d) => (
+                <div key={d.name} className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: d.color }} />
+                  <span className="text-xs text-foreground">{d.name}</span>
+                  <span className="text-xs font-bold text-foreground ml-auto">{d.value}</span>
                 </div>
-                <div className="h-2 rounded-full bg-secondary overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all duration-500"
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground text-center py-8">Sem dados</p>
+        )}
       </div>
 
       {/* Últimas NFs */}
@@ -154,6 +274,9 @@ const Dashboard = () => {
               </div>
             </div>
           ))}
+          {notas.length === 0 && (
+            <p className="text-xs text-muted-foreground text-center py-4">Nenhuma nota cadastrada</p>
+          )}
         </div>
       </div>
     </div>
