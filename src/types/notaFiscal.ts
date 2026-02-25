@@ -18,7 +18,7 @@ export const SETORES = [
   "GOV.",
   "A&B",
   "Serviços Gerais",
-  "Nao identificado"
+  "Não Identificado"
 ] as const;
 
 export type Setor = (typeof SETORES)[number];
