@@ -13,15 +13,12 @@ export interface NotaFiscal {
 
 export const SETORES = [
   "Administrativo",
-  "Comercial",
-  "Financeiro",
-  "Marketing",
-  "Operações",
-  "RH",
-  "TI",
-  "Logística",
   "Manutenção",
-  "Jurídico",
+  "Cozinha",
+  "GOV.",
+  "A&B",
+  "Serviços Gerais",
+  "Nao identificado"
 ] as const;
 
 export type Setor = (typeof SETORES)[number];
