@@ -1,7 +1,9 @@
 import { useNotas } from "@/contexts/NFContext";
 import { useState, useMemo } from "react";
-import { Search, Filter, Trash2, SlidersHorizontal, X } from "lucide-react";
+import { Search, Filter, Trash2, SlidersHorizontal, X, Pencil } from "lucide-react";
 import { SETORES } from "@/types/notaFiscal";
+import EditNotaModal from "@/components/EditNotaModal";
+import type { NotaFiscal } from "@/types/notaFiscal";
 
 const NotasList = () => {
   const { notas, removeNota, updateNota } = useNotas();
@@ -11,6 +13,7 @@ const NotasList = () => {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [editingNota, setEditingNota] = useState<NotaFiscal | null>(null);
 
   const filtered = useMemo(() => {
     return notas.filter((n) => {
@@ -224,6 +227,12 @@ const NotasList = () => {
                       </button>
                     )}
                     <button
+                      onClick={() => setEditingNota(nota)}
+                      className="p-1.5 rounded-lg bg-primary/10 text-primary"
+                    >
+                      <Pencil className="w-3 h-3" />
+                    </button>
+                    <button
                       onClick={() => removeNota(nota.id)}
                       className="p-1.5 rounded-lg bg-destructive/10 text-destructive"
                     >
@@ -236,6 +245,10 @@ const NotasList = () => {
           ))
         )}
       </div>
+
+      {editingNota && (
+        <EditNotaModal nota={editingNota} onClose={() => setEditingNota(null)} />
+      )}
     </div>
   );
 };

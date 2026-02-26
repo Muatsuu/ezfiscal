@@ -6,13 +6,12 @@ import { toast } from "sonner";
 import { Sparkles } from "lucide-react";
 
 const KEYWORDS_SETOR: Record<string, string[]> = {
-  TI: ["software", "licença", "computador", "sistema", "servidor", "cloud", "tecnologia", "ti"],
-  "RH": ["salário", "folha", "benefício", "treinamento", "rh", "recursos humanos"],
-  Manutenção: ["limpeza", "manutenção", "reparo", "conserto", "pintura"],
-  Administrativo: ["escritório", "material", "papelaria", "expediente"],
-  Bar: ["Bebidas", "Comida", "Café", "Chocolate", "Salgadinho"],
-  Escritorio: ["Caneto", "Papel"],
-  Jurídico: ["advocacia", "jurídico", "contrato", "legal"],
+  Administrativo: ["escritório", "material", "papelaria", "expediente", "administrativo", "recepção", "secretaria"],
+  Manutenção: ["manutenção", "reparo", "conserto", "pintura", "elétrica", "hidráulica", "reforma", "limpeza"],
+  Cozinha: ["cozinha", "alimento", "ingrediente", "comida", "refeição", "gás", "utensílio"],
+  "GOV.": ["governo", "gov", "imposto", "taxa", "licença", "alvará", "prefeitura", "fiscal"],
+  "A&B": ["bebida", "bar", "restaurante", "café", "cerveja", "drink", "coquetel", "buffet"],
+  "Serviços Gerais": ["serviço", "terceirizado", "prestador", "contrato", "segurança", "portaria", "jardinagem"],
 };
 
 function sugerirSetor(descricao: string): string | null {
