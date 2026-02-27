@@ -26,7 +26,7 @@ const AppSidebar = () => {
   }, []);
 
   return (
-    <aside className="hidden lg:flex flex-col w-[240px] h-screen sticky top-0 bg-sidebar border-r border-sidebar-border">
+    <aside className="hidden lg:flex flex-col w-[240px] h-screen fixed top-0 left-0 bg-sidebar border-r border-sidebar-border z-40">
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-6">
         <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center">

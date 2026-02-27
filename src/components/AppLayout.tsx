@@ -13,7 +13,7 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
     <div className="min-h-screen bg-background flex overflow-x-hidden max-w-[100vw]">
       <AppSidebar />
       
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 flex flex-col min-h-screen lg:ml-[240px]">
         {/* Mobile header */}
         <header className="lg:hidden sticky top-0 z-40 flex items-center justify-between px-5 py-4 bg-background/90 backdrop-blur-md border-b border-border" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.5rem)' }}>
           <div>
