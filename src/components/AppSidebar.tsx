@@ -2,6 +2,7 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { LayoutDashboard, FileText, BarChart3, PlusCircle, Sun, Moon, LogOut, Smartphone } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useState, useEffect } from "react";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
@@ -14,9 +15,18 @@ const AppSidebar = () => {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const { user, signOut } = useAuth();
+  const [isStandalone, setIsStandalone] = useState(false);
+
+  useEffect(() => {
+    const mql = window.matchMedia('(display-mode: standalone)');
+    setIsStandalone(mql.matches);
+    const handler = (e: MediaQueryListEvent) => setIsStandalone(e.matches);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
 
   return (
-    <aside className="hidden lg:flex flex-col w-[240px] min-h-screen bg-sidebar border-r border-sidebar-border">
+    <aside className="hidden lg:flex flex-col w-[240px] h-screen sticky top-0 bg-sidebar border-r border-sidebar-border">
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-6">
         <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center">
@@ -66,13 +76,15 @@ const AppSidebar = () => {
           Nova Nota Fiscal
         </button>
 
-        <NavLink
-          to="/instalar"
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <Smartphone className="w-3.5 h-3.5" />
-          Instalar no iPhone
-        </NavLink>
+        {!isStandalone && (
+          <NavLink
+            to="/instalar"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Smartphone className="w-3.5 h-3.5" />
+            Instalar no iPhone
+          </NavLink>
+        )}
 
         <div className="border-t border-sidebar-border pt-3">
           <div className="flex items-center justify-between px-1">
