@@ -1,9 +1,20 @@
 import { useNotas } from "@/contexts/NFContext";
 import { useState, useMemo } from "react";
-import { Search, Filter, Trash2, SlidersHorizontal, X, Pencil } from "lucide-react";
+import { Search, Filter, Trash2, SlidersHorizontal, X, Pencil, AlertTriangle } from "lucide-react";
 import { SETORES } from "@/types/notaFiscal";
 import EditNotaModal from "@/components/EditNotaModal";
 import type { NotaFiscal } from "@/types/notaFiscal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 const NotasList = () => {
   const { notas, removeNota, updateNota } = useNotas();
@@ -12,8 +23,12 @@ const NotasList = () => {
   const [filterSetor, setFilterSetor] = useState<string>("todos");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [valorMin, setValorMin] = useState("");
+  const [valorMax, setValorMax] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [editingNota, setEditingNota] = useState<NotaFiscal | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<NotaFiscal | null>(null);
+  const [payTarget, setPayTarget] = useState<NotaFiscal | null>(null);
 
   const filtered = useMemo(() => {
     return notas.filter((n) => {
@@ -24,15 +39,19 @@ const NotasList = () => {
       const matchesSetor = filterSetor === "todos" || n.setor === filterSetor;
       const matchesDateFrom = !dateFrom || n.dataEmissao >= dateFrom;
       const matchesDateTo = !dateTo || n.dataEmissao <= dateTo;
-      return matchesSearch && matchesStatus && matchesSetor && matchesDateFrom && matchesDateTo;
+      const matchesValorMin = !valorMin || n.valor >= parseFloat(valorMin);
+      const matchesValorMax = !valorMax || n.valor <= parseFloat(valorMax);
+      return matchesSearch && matchesStatus && matchesSetor && matchesDateFrom && matchesDateTo && matchesValorMin && matchesValorMax;
     });
-  }, [notas, search, filterStatus, filterSetor, dateFrom, dateTo]);
+  }, [notas, search, filterStatus, filterSetor, dateFrom, dateTo, valorMin, valorMax]);
 
   const activeFiltersCount = [
     filterStatus !== "todos",
     filterSetor !== "todos",
     !!dateFrom,
     !!dateTo,
+    !!valorMin,
+    !!valorMax,
   ].filter(Boolean).length;
 
   const clearFilters = () => {
@@ -40,7 +59,25 @@ const NotasList = () => {
     setFilterSetor("todos");
     setDateFrom("");
     setDateTo("");
+    setValorMin("");
+    setValorMax("");
     setSearch("");
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteTarget) {
+      removeNota(deleteTarget.id);
+      toast.success("Nota fiscal excluída com sucesso");
+      setDeleteTarget(null);
+    }
+  };
+
+  const handleConfirmPay = () => {
+    if (payTarget) {
+      updateNota(payTarget.id, { status: "paga" });
+      toast.success("Nota fiscal marcada como paga");
+      setPayTarget(null);
+    }
   };
 
   const formatCurrency = (value: number) =>
@@ -152,6 +189,33 @@ const NotasList = () => {
               />
             </div>
           </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Valor mínimo</label>
+              <input
+                type="number"
+                placeholder="R$ 0,00"
+                value={valorMin}
+                onChange={(e) => setValorMin(e.target.value)}
+                className={inputClass + " text-xs"}
+                min="0"
+                step="0.01"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Valor máximo</label>
+              <input
+                type="number"
+                placeholder="R$ 99.999"
+                value={valorMax}
+                onChange={(e) => setValorMax(e.target.value)}
+                className={inputClass + " text-xs"}
+                min="0"
+                step="0.01"
+              />
+            </div>
+          </div>
         </div>
       )}
 
@@ -220,7 +284,7 @@ const NotasList = () => {
                   <div className="flex gap-1">
                     {nota.status === "pendente" && (
                       <button
-                        onClick={() => updateNota(nota.id, { status: "paga" })}
+                        onClick={() => setPayTarget(nota)}
                         className="text-[10px] px-2 py-1 rounded-lg bg-success/10 text-success font-medium"
                       >
                         Pagar
@@ -229,12 +293,14 @@ const NotasList = () => {
                     <button
                       onClick={() => setEditingNota(nota)}
                       className="p-1.5 rounded-lg bg-primary/10 text-primary"
+                      title="Editar nota"
                     >
                       <Pencil className="w-3 h-3" />
                     </button>
                     <button
-                      onClick={() => removeNota(nota.id)}
+                      onClick={() => setDeleteTarget(nota)}
                       className="p-1.5 rounded-lg bg-destructive/10 text-destructive"
+                      title="Excluir nota"
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>
@@ -249,6 +315,53 @@ const NotasList = () => {
       {editingNota && (
         <EditNotaModal nota={editingNota} onClose={() => setEditingNota(null)} />
       )}
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+              Excluir nota fiscal
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir a nota <strong>{deleteTarget?.numero}</strong> de{" "}
+              <strong>{deleteTarget?.fornecedor}</strong>? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Pay Confirmation */}
+      <AlertDialog open={!!payTarget} onOpenChange={(open) => !open && setPayTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar pagamento</AlertDialogTitle>
+            <AlertDialogDescription>
+              Deseja marcar a nota <strong>{payTarget?.numero}</strong> de{" "}
+              <strong>{payTarget?.fornecedor}</strong> ({payTarget && formatCurrency(payTarget.valor)}) como paga?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmPay}
+              className="bg-success text-success-foreground hover:bg-success/90"
+            >
+              Confirmar Pagamento
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
