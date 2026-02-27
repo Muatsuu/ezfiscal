@@ -10,7 +10,7 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
   const { signOut } = useAuth();
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex overflow-x-hidden max-w-[100vw]">
       <AppSidebar />
       
       <div className="flex-1 flex flex-col min-h-screen">
@@ -38,7 +38,7 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
         </header>
 
         {/* Main content */}
-        <main className="flex-1 px-5 lg:px-8 lg:py-6 pb-24 lg:pb-8 animate-fade-in max-w-7xl w-full">
+        <main className="flex-1 px-4 lg:px-8 lg:py-6 pb-24 lg:pb-8 animate-fade-in max-w-7xl w-full overflow-x-hidden">
           {children}
         </main>
       </div>

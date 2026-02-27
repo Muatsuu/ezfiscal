@@ -92,7 +92,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="space-y-6 pt-2">
+    <div className="space-y-6 pt-2 overflow-x-hidden">
       {/* Header */}
       <div>
         <p className="text-xs text-muted-foreground capitalize">{dateStr}</p>
@@ -235,17 +235,17 @@ const Dashboard = () => {
             {stats.porSetorData.map((item) => {
               const pct = stats.total > 0 ? (item.valor / stats.total) * 100 : 0;
               return (
-                <div key={item.setor} className="flex items-center gap-3">
-                  <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
-                  <span className="text-sm text-foreground min-w-[120px]">{item.setor}</span>
-                  <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                <div key={item.setor} className="flex items-center gap-2 lg:gap-3">
+                  <div className="w-2 h-2 lg:w-2.5 lg:h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
+                  <span className="text-xs lg:text-sm text-foreground min-w-[80px] lg:min-w-[120px] truncate">{item.setor}</span>
+                  <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden min-w-[40px]">
                     <div
                       className="h-full rounded-full transition-all duration-500"
                       style={{ width: `${pct}%`, backgroundColor: item.color }}
                     />
                   </div>
-                  <span className="text-sm font-semibold text-foreground min-w-[100px] text-right">{formatCurrency(item.valor)}</span>
-                  <span className="text-xs text-muted-foreground w-12 text-right">{pct.toFixed(0)}%</span>
+                  <span className="text-xs lg:text-sm font-semibold text-foreground min-w-[70px] lg:min-w-[100px] text-right">{formatCurrency(item.valor)}</span>
+                  <span className="text-[10px] lg:text-xs text-muted-foreground w-8 lg:w-12 text-right">{pct.toFixed(0)}%</span>
                 </div>
               );
             })}
