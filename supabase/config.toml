@@ -1,1 +1,4 @@
 project_id = "qfedkwrprkbkrmcmcome"
+
+[functions.parse-nf]
+verify_jwt = false

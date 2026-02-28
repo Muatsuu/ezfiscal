@@ -10,6 +10,8 @@ import Dashboard from "./pages/Dashboard";
 import NotasList from "./pages/NotasList";
 import AddNota from "./pages/AddNota";
 import Relatorios from "./pages/Relatorios";
+import Calendario from "./pages/Calendario";
+import Fornecedores from "./pages/Fornecedores";
 import Alertas from "./pages/Alertas";
 import InstallPage from "./pages/InstallPage";
 import NotFound from "./pages/NotFound";
@@ -38,6 +40,8 @@ const ProtectedRoutes = () => {
           <Route path="/notas" element={<NotasList />} />
           <Route path="/adicionar" element={<AddNota />} />
           <Route path="/relatorios" element={<Relatorios />} />
+          <Route path="/calendario" element={<Calendario />} />
+          <Route path="/fornecedores" element={<Fornecedores />} />
           <Route path="/alertas" element={<Alertas />} />
           <Route path="/instalar" element={<InstallPage />} />
           <Route path="*" element={<NotFound />} />
