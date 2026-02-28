@@ -3,7 +3,8 @@ import { useNotas } from "@/contexts/NFContext";
 import { SETORES } from "@/types/notaFiscal";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Upload, FileText, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const KEYWORDS_SETOR: Record<string, string[]> = {
   Administrativo: ["escritório", "material", "papelaria", "expediente", "administrativo", "recepção", "secretaria"],
@@ -39,11 +40,88 @@ const AddNota = () => {
 
   const [sugestao, setSugestao] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [parsing, setParsing] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
 
   const handleDescricaoChange = (value: string) => {
     const s = sugerirSetor(value);
     setForm((f) => ({ ...f, descricao: value, ...(s ? { setor: s } : {}) }));
     setSugestao(s);
+  };
+
+  const handleFileUpload = async (file: File) => {
+    const allowedTypes = ["text/xml", "application/xml", "application/pdf", "text/plain"];
+    const isXML = file.name.endsWith(".xml");
+    const isPDF = file.name.endsWith(".pdf");
+
+    if (!allowedTypes.includes(file.type) && !isXML && !isPDF) {
+      toast.error("Formato não suportado. Use XML, PDF ou TXT.");
+      return;
+    }
+
+    setParsing(true);
+    try {
+      let content = "";
+      let fileType = "text";
+
+      if (isXML || file.type.includes("xml")) {
+        content = await file.text();
+        fileType = "xml";
+      } else if (isPDF) {
+        // For PDF, read as base64 and send to AI for text extraction
+        const buffer = await file.arrayBuffer();
+        const bytes = new Uint8Array(buffer);
+        let binary = "";
+        for (let i = 0; i < bytes.length; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        content = btoa(binary);
+        fileType = "pdf_base64";
+      } else {
+        content = await file.text();
+        fileType = "text";
+      }
+
+      const { data, error } = await supabase.functions.invoke("parse-nf", {
+        body: { content, type: fileType },
+      });
+
+      if (error) throw error;
+
+      if (data?.success && data?.data) {
+        const d = data.data;
+        setForm({
+          numero: d.numero || "",
+          tipo: d.tipo === "servico" ? "servico" : "fornecedor",
+          fornecedor: d.fornecedor || "",
+          valor: d.valor ? String(d.valor) : "",
+          setor: SETORES.includes(d.setor) ? d.setor : "",
+          dataEmissao: d.dataEmissao || "",
+          dataVencimento: d.dataVencimento || "",
+          descricao: d.descricao || "",
+        });
+        toast.success("Dados extraídos com sucesso! Revise antes de salvar.");
+      } else {
+        toast.error(data?.error || "Não foi possível extrair dados do arquivo");
+      }
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      toast.error("Erro ao processar arquivo. Tente novamente.");
+    } finally {
+      setParsing(false);
+    }
+  };
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file) handleFileUpload(file);
+  };
+
+  const onFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleFileUpload(file);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -76,6 +154,57 @@ const AddNota = () => {
   return (
     <div className="space-y-5">
       <h2 className="text-xl font-bold text-foreground">Nova Nota Fiscal</h2>
+
+      {/* Upload Zone */}
+      <div
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={onDrop}
+        className={`relative border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${
+          dragOver
+            ? "border-primary bg-primary/5"
+            : "border-border hover:border-primary/50"
+        }`}
+        onClick={() => document.getElementById("file-input")?.click()}
+      >
+        <input
+          id="file-input"
+          type="file"
+          accept=".xml,.pdf,.txt"
+          onChange={onFileSelect}
+          className="hidden"
+        />
+        {parsing ? (
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            <p className="text-sm text-primary font-medium">Processando com IA...</p>
+            <p className="text-xs text-muted-foreground">Extraindo dados da nota fiscal</p>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Upload className="w-6 h-6 text-primary" />
+            </div>
+            <p className="text-sm font-medium text-foreground">
+              Arraste um arquivo ou toque para selecionar
+            </p>
+            <p className="text-xs text-muted-foreground">
+              XML, PDF ou TXT · A IA preenche os campos automaticamente
+            </p>
+            <div className="flex gap-2 mt-1">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-success/10 text-success font-medium">XML</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">PDF</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent/10 text-accent font-medium">TXT</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-px bg-border" />
+        <span className="text-xs text-muted-foreground">ou preencha manualmente</span>
+        <div className="flex-1 h-px bg-border" />
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Tipo */}

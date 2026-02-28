@@ -1,12 +1,15 @@
 import { useNotas } from "@/contexts/NFContext";
 import { useMemo, useState } from "react";
-import { FileDown, FileText, BarChart3, RefreshCw, TrendingUp } from "lucide-react";
+import { FileDown, FileText, BarChart3, RefreshCw, TrendingUp, Settings2 } from "lucide-react";
 import { SETORES } from "@/types/notaFiscal";
 import { toast } from "sonner";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
   PieChart, Pie, LineChart, Line, CartesianGrid, Area, AreaChart,
 } from "recharts";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+} from "@/components/ui/dialog";
 
 const SECTOR_COLORS: Record<string, string> = {
   "Administrativo": "hsl(207, 90%, 54%)",
@@ -28,6 +31,23 @@ const periodFilters = [
 const Relatorios = () => {
   const { notas } = useNotas();
   const [period, setPeriod] = useState("month");
+
+  const ALL_COLUMNS = [
+    { key: "numero", label: "Número" },
+    { key: "tipo", label: "Tipo" },
+    { key: "fornecedor", label: "Fornecedor" },
+    { key: "valor", label: "Valor" },
+    { key: "setor", label: "Setor" },
+    { key: "dataEmissao", label: "Emissão" },
+    { key: "dataVencimento", label: "Vencimento" },
+    { key: "status", label: "Status" },
+    { key: "descricao", label: "Descrição" },
+  ] as const;
+
+  const [selectedColumns, setSelectedColumns] = useState<string[]>(
+    ALL_COLUMNS.map((c) => c.key)
+  );
+  const [showExportDialog, setShowExportDialog] = useState(false);
 
   const filtered = useMemo(() => {
     const now = new Date();
@@ -108,9 +128,20 @@ const Relatorios = () => {
 
   const exportCSV = () => {
     if (filtered.length === 0) { toast.error("Nenhum dado para exportar"); return; }
-    const headers = "Número,Tipo,Fornecedor,Valor,Setor,Emissão,Vencimento,Status,Descrição\n";
+    const colMap: Record<string, (n: any) => string> = {
+      numero: (n) => `"${n.numero}"`,
+      tipo: (n) => `"${n.tipo}"`,
+      fornecedor: (n) => `"${n.fornecedor}"`,
+      valor: (n) => String(n.valor),
+      setor: (n) => `"${n.setor}"`,
+      dataEmissao: (n) => `"${n.dataEmissao}"`,
+      dataVencimento: (n) => `"${n.dataVencimento}"`,
+      status: (n) => `"${n.status}"`,
+      descricao: (n) => `"${n.descricao || ""}"`,
+    };
+    const headers = selectedColumns.map((k) => ALL_COLUMNS.find((c) => c.key === k)?.label || k).join(",") + "\n";
     const rows = filtered.map((n) =>
-      `"${n.numero}","${n.tipo}","${n.fornecedor}",${n.valor},"${n.setor}","${n.dataEmissao}","${n.dataVencimento}","${n.status}","${n.descricao || ""}"`
+      selectedColumns.map((k) => colMap[k]?.(n) || "").join(",")
     ).join("\n");
     const blob = new Blob(["\uFEFF" + headers + rows], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
@@ -120,6 +151,13 @@ const Relatorios = () => {
     a.click();
     URL.revokeObjectURL(url);
     toast.success("Relatório exportado!");
+    setShowExportDialog(false);
+  };
+
+  const toggleColumn = (key: string) => {
+    setSelectedColumns((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
   };
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -143,14 +181,62 @@ const Relatorios = () => {
           <p className="text-xs text-muted-foreground capitalize mt-0.5">{periodLabel}</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-destructive/10 text-destructive text-xs font-semibold hover:bg-destructive/20 transition-colors">
-            <FileDown className="w-4 h-4" />
-            PDF
-          </button>
-          <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-success/10 text-success text-xs font-semibold hover:bg-success/20 transition-colors">
-            <FileText className="w-4 h-4" />
-            Excel
-          </button>
+          <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+            <DialogTrigger asChild>
+              <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-success/10 text-success text-xs font-semibold hover:bg-success/20 transition-colors">
+                <Settings2 className="w-4 h-4" />
+                Exportar
+              </button>
+            </DialogTrigger>
+            <DialogContent className="max-w-sm">
+              <DialogHeader>
+                <DialogTitle className="text-base">Exportar Relatório</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3">
+                <p className="text-xs text-muted-foreground">Selecione as colunas para exportar:</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {ALL_COLUMNS.map((col) => (
+                    <label
+                      key={col.key}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium cursor-pointer transition-all ${
+                        selectedColumns.includes(col.key)
+                          ? "bg-primary/10 text-primary"
+                          : "bg-secondary text-muted-foreground"
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedColumns.includes(col.key)}
+                        onChange={() => toggleColumn(col.key)}
+                        className="sr-only"
+                      />
+                      <div
+                        className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${
+                          selectedColumns.includes(col.key)
+                            ? "bg-primary border-primary"
+                            : "border-muted-foreground/30"
+                        }`}
+                      >
+                        {selectedColumns.includes(col.key) && (
+                          <svg className="w-2.5 h-2.5 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                      </div>
+                      {col.label}
+                    </label>
+                  ))}
+                </div>
+                <button
+                  onClick={exportCSV}
+                  disabled={selectedColumns.length === 0}
+                  className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-50"
+                >
+                  Exportar CSV ({selectedColumns.length} colunas)
+                </button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 

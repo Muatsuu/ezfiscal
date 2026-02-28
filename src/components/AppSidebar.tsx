@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, FileText, BarChart3, PlusCircle, Sun, Moon, LogOut, Smartphone } from "lucide-react";
+import { LayoutDashboard, FileText, BarChart3, CalendarDays, Building2, PlusCircle, Sun, Moon, LogOut, Smartphone } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect } from "react";
@@ -7,6 +7,8 @@ import { useState, useEffect } from "react";
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/notas", icon: FileText, label: "Notas Fiscais" },
+  { to: "/calendario", icon: CalendarDays, label: "Calendário" },
+  { to: "/fornecedores", icon: Building2, label: "Fornecedores" },
   { to: "/relatorios", icon: BarChart3, label: "Relatórios" },
 ];
 

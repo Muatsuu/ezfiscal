@@ -1,12 +1,12 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, FileText, PlusCircle, BarChart3, Bell } from "lucide-react";
+import { LayoutDashboard, FileText, PlusCircle, CalendarDays, BarChart3 } from "lucide-react";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Início" },
   { to: "/notas", icon: FileText, label: "NFs" },
   { to: "/adicionar", icon: PlusCircle, label: "Nova" },
+  { to: "/calendario", icon: CalendarDays, label: "Calendário" },
   { to: "/relatorios", icon: BarChart3, label: "Relatórios" },
-  { to: "/alertas", icon: Bell, label: "Alertas" },
 ];
 
 const BottomNav = () => {

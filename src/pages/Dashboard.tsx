@@ -6,6 +6,7 @@ import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, CartesianGrid,
 } from "recharts";
+import InsightsSection from "@/components/dashboard/InsightsSection";
 
 const SECTOR_COLORS: Record<string, string> = {
   "Administrativo": "hsl(207, 90%, 54%)",
@@ -254,6 +255,9 @@ const Dashboard = () => {
           <p className="text-xs text-muted-foreground text-center py-6">Sem dados</p>
         )}
       </div>
+
+      {/* Insights Inteligentes */}
+      <InsightsSection notas={notas} />
 
       {/* Notas Recentes */}
       <div className="glass-card rounded-2xl p-5">
