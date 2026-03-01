@@ -38,7 +38,7 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
         </header>
 
         {/* Main content */}
-        <main className="flex-1 px-4 lg:px-8 lg:py-6 pb-24 lg:pb-8 animate-fade-in max-w-7xl w-full overflow-x-hidden">
+        <main className="flex-1 px-4 lg:px-8 lg:py-6 pb-24 lg:pb-8 animate-fade-in max-w-7xl w-full mx-auto overflow-x-hidden">
           {children}
         </main>
       </div>
