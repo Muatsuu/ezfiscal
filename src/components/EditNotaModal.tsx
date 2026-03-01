@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { NotaFiscal, SETORES } from "@/types/notaFiscal";
-import { X, Sparkles } from "lucide-react";
+import { X, Sparkles, Paperclip, FileCheck, Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useNotas } from "@/contexts/NFContext";
 
@@ -27,7 +27,7 @@ interface EditNotaModalProps {
 }
 
 const EditNotaModal = ({ nota, onClose }: EditNotaModalProps) => {
-  const { updateNota } = useNotas();
+  const { updateNota, uploadAttachment, getAttachmentUrl } = useNotas();
   const [form, setForm] = useState({
     numero: nota.numero,
     tipo: nota.tipo,
@@ -41,11 +41,41 @@ const EditNotaModal = ({ nota, onClose }: EditNotaModalProps) => {
   });
   const [sugestao, setSugestao] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [newAttachment, setNewAttachment] = useState<File | null>(null);
+  const [downloading, setDownloading] = useState(false);
 
   const handleDescricaoChange = (value: string) => {
     const s = sugerirSetor(value);
     setForm((f) => ({ ...f, descricao: value }));
     setSugestao(s);
+  };
+
+  const handleDownloadAttachment = async () => {
+    if (!nota.attachmentPath) return;
+    setDownloading(true);
+    try {
+      const url = await getAttachmentUrl(nota.attachmentPath);
+      if (url) {
+        window.open(url, "_blank");
+      } else {
+        toast.error("Erro ao gerar link do arquivo");
+      }
+    } catch {
+      toast.error("Erro ao baixar arquivo");
+    }
+    setDownloading(false);
+  };
+
+  const onAttachmentSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      if (!["pdf", "xml"].includes(ext || "")) {
+        toast.error("Apenas PDF ou XML podem ser anexados.");
+        return;
+      }
+      setNewAttachment(file);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,13 +96,20 @@ const EditNotaModal = ({ nota, onClose }: EditNotaModalProps) => {
       status: form.status as "pendente" | "paga" | "vencida",
       descricao: form.descricao || undefined,
     });
+
+    if (newAttachment) {
+      await uploadAttachment(nota.id, newAttachment);
+    }
+
     setSubmitting(false);
     toast.success("Nota fiscal atualizada!");
     onClose();
   };
 
   const inputClass =
-    "w-full px-4 py-3 rounded-xl bg-secondary text-foreground text-sm placeholder:text-muted-foreground border-0 outline-none focus:ring-2 focus:ring-primary/30 transition-all";
+    "w-full px-4 py-3 rounded-xl bg-secondary text-foreground text-sm placeholder:text-muted-foreground border-0 outline-none focus:ring-2 focus:ring-primary/30 transition-all [-webkit-appearance:none] [appearance:none]";
+
+  const attachmentExt = nota.attachmentPath?.split(".").pop()?.toUpperCase();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4" onClick={onClose}>
@@ -145,15 +182,69 @@ const EditNotaModal = ({ nota, onClose }: EditNotaModalProps) => {
           </select>
 
           {/* Dates */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
+          <div className="grid grid-cols-2 gap-3 overflow-hidden">
+            <div className="min-w-0 overflow-hidden">
               <label className="text-xs text-muted-foreground mb-1 block">Emissão *</label>
-              <input type="date" value={form.dataEmissao} onChange={(e) => setForm((f) => ({ ...f, dataEmissao: e.target.value }))} className={inputClass + " text-xs"} />
+              <input type="date" value={form.dataEmissao} onChange={(e) => setForm((f) => ({ ...f, dataEmissao: e.target.value }))} className={inputClass + " min-w-0 max-w-full text-xs box-border"} />
             </div>
-            <div>
+            <div className="min-w-0 overflow-hidden">
               <label className="text-xs text-muted-foreground mb-1 block">Vencimento *</label>
-              <input type="date" value={form.dataVencimento} onChange={(e) => setForm((f) => ({ ...f, dataVencimento: e.target.value }))} className={inputClass + " text-xs"} />
+              <input type="date" value={form.dataVencimento} onChange={(e) => setForm((f) => ({ ...f, dataVencimento: e.target.value }))} className={inputClass + " min-w-0 max-w-full text-xs box-border"} />
             </div>
+          </div>
+
+          {/* Attachment section */}
+          <div className="space-y-2">
+            <label className="text-xs text-muted-foreground block">Anexo PDF/XML</label>
+
+            {/* Existing attachment */}
+            {nota.attachmentPath && !newAttachment && (
+              <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20">
+                <FileCheck className="w-5 h-5 text-primary flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground">Arquivo anexado ({attachmentExt})</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleDownloadAttachment}
+                  disabled={downloading}
+                  className="flex items-center gap-1 text-xs text-primary hover:underline flex-shrink-0"
+                >
+                  {downloading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
+                  Baixar
+                </button>
+              </div>
+            )}
+
+            {/* New attachment or replace */}
+            {newAttachment ? (
+              <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-success/10 border border-success/20">
+                <FileCheck className="w-5 h-5 text-success flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{newAttachment.name}</p>
+                  <p className="text-[10px] text-muted-foreground">{(newAttachment.size / 1024).toFixed(0)} KB · Será salvo ao confirmar</p>
+                </div>
+                <button type="button" onClick={() => setNewAttachment(null)} className="text-xs text-destructive hover:underline flex-shrink-0">
+                  Remover
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => document.getElementById("edit-attachment-input")?.click()}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-secondary text-secondary-foreground text-sm hover:bg-secondary/80 transition-colors"
+              >
+                <Paperclip className="w-4 h-4" />
+                {nota.attachmentPath ? "Substituir anexo" : "Anexar arquivo"}
+              </button>
+            )}
+            <input
+              id="edit-attachment-input"
+              type="file"
+              accept=".pdf,.xml"
+              onChange={onAttachmentSelect}
+              className="hidden"
+            />
           </div>
 
           <div className="flex gap-3 pt-2">

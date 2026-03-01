@@ -9,6 +9,7 @@ export interface NotaFiscal {
   dataVencimento: string;
   status: "pendente" | "paga" | "vencida";
   descricao?: string;
+  attachmentPath?: string;
 }
 
 export const SETORES = [
@@ -17,6 +18,7 @@ export const SETORES = [
   "Cozinha",
   "GOV.",
   "A&B",
+  "Operações",
   "Serviços Gerais",
   "Não Identificado"
 ] as const;

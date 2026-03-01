@@ -58,6 +58,7 @@ export type Database = {
       }
       notas_fiscais: {
         Row: {
+          attachment_path: string | null
           created_at: string
           data_emissao: string
           data_vencimento: string
@@ -73,6 +74,7 @@ export type Database = {
           valor: number
         }
         Insert: {
+          attachment_path?: string | null
           created_at?: string
           data_emissao: string
           data_vencimento: string
@@ -88,6 +90,7 @@ export type Database = {
           valor: number
         }
         Update: {
+          attachment_path?: string | null
           created_at?: string
           data_emissao?: string
           data_vencimento?: string

@@ -7,17 +7,21 @@ import { toast } from "sonner";
 interface NFContextType {
   notas: NotaFiscal[];
   loading: boolean;
-  addNota: (nota: Omit<NotaFiscal, "id">) => Promise<void>;
+  addNota: (nota: Omit<NotaFiscal, "id">) => Promise<string | null>;
   removeNota: (id: string) => Promise<void>;
   updateNota: (id: string, nota: Partial<NotaFiscal>) => Promise<void>;
+  uploadAttachment: (notaId: string, file: File) => Promise<string | null>;
+  getAttachmentUrl: (path: string) => Promise<string | null>;
 }
 
 const NFContext = createContext<NFContextType>({
   notas: [],
   loading: true,
-  addNota: async () => {},
+  addNota: async () => null,
   removeNota: async () => {},
   updateNota: async () => {},
+  uploadAttachment: async () => null,
+  getAttachmentUrl: async () => null,
 });
 
 export const useNotas = () => useContext(NFContext);
@@ -54,6 +58,7 @@ export const NFProvider = ({ children }: { children: ReactNode }) => {
           dataVencimento: d.data_vencimento,
           status: d.status as "pendente" | "paga" | "vencida",
           descricao: d.descricao || undefined,
+          attachmentPath: (d as any).attachment_path || undefined,
         }))
       );
     }
@@ -64,9 +69,9 @@ export const NFProvider = ({ children }: { children: ReactNode }) => {
     fetchNotas();
   }, [fetchNotas]);
 
-  const addNota = async (nota: Omit<NotaFiscal, "id">) => {
-    if (!user) return;
-    const { error } = await supabase.from("notas_fiscais").insert({
+  const addNota = async (nota: Omit<NotaFiscal, "id">): Promise<string | null> => {
+    if (!user) return null;
+    const { data, error } = await supabase.from("notas_fiscais").insert({
       user_id: user.id,
       numero: nota.numero,
       tipo: nota.tipo,
@@ -77,16 +82,22 @@ export const NFProvider = ({ children }: { children: ReactNode }) => {
       data_vencimento: nota.dataVencimento,
       status: nota.status,
       descricao: nota.descricao || null,
-    });
+    }).select("id").single();
     if (error) {
       console.error("Error adding nota:", error);
       toast.error("Erro ao adicionar nota fiscal");
-      return;
+      return null;
     }
     await fetchNotas();
+    return data?.id || null;
   };
 
   const removeNota = async (id: string) => {
+    // Also remove attachment if exists
+    const nota = notas.find(n => n.id === id);
+    if (nota?.attachmentPath) {
+      await supabase.storage.from("nf-attachments").remove([nota.attachmentPath]);
+    }
     const { error } = await supabase.from("notas_fiscais").delete().eq("id", id);
     if (error) {
       console.error("Error removing nota:", error);
@@ -107,6 +118,7 @@ export const NFProvider = ({ children }: { children: ReactNode }) => {
     if (updates.dataVencimento !== undefined) dbUpdates.data_vencimento = updates.dataVencimento;
     if (updates.status !== undefined) dbUpdates.status = updates.status;
     if (updates.descricao !== undefined) dbUpdates.descricao = updates.descricao;
+    if (updates.attachmentPath !== undefined) dbUpdates.attachment_path = updates.attachmentPath;
 
     const { error } = await supabase.from("notas_fiscais").update(dbUpdates).eq("id", id);
     if (error) {
@@ -117,8 +129,35 @@ export const NFProvider = ({ children }: { children: ReactNode }) => {
     setNotas((prev) => prev.map((n) => (n.id === id ? { ...n, ...updates } : n)));
   };
 
+  const uploadAttachment = async (notaId: string, file: File): Promise<string | null> => {
+    if (!user) return null;
+    const ext = file.name.split(".").pop()?.toLowerCase() || "pdf";
+    const path = `${user.id}/${notaId}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("nf-attachments")
+      .upload(path, file, { upsert: true });
+
+    if (uploadError) {
+      console.error("Upload error:", uploadError);
+      toast.error("Erro ao anexar arquivo");
+      return null;
+    }
+
+    // Save path to nota
+    await updateNota(notaId, { attachmentPath: path });
+    return path;
+  };
+
+  const getAttachmentUrl = async (path: string): Promise<string | null> => {
+    const { data } = await supabase.storage
+      .from("nf-attachments")
+      .createSignedUrl(path, 3600); // 1 hour
+    return data?.signedUrl || null;
+  };
+
   return (
-    <NFContext.Provider value={{ notas, loading, addNota, removeNota, updateNota }}>
+    <NFContext.Provider value={{ notas, loading, addNota, removeNota, updateNota, uploadAttachment, getAttachmentUrl }}>
       {children}
     </NFContext.Provider>
   );
