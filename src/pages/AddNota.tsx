@@ -3,7 +3,7 @@ import { useNotas } from "@/contexts/NFContext";
 import { SETORES } from "@/types/notaFiscal";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { Sparkles, Upload, FileText, Loader2 } from "lucide-react";
+import { Sparkles, Upload, Loader2, Paperclip, FileCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const KEYWORDS_SETOR: Record<string, string[]> = {
@@ -24,7 +24,7 @@ function sugerirSetor(descricao: string): string | null {
 }
 
 const AddNota = () => {
-  const { addNota } = useNotas();
+  const { addNota, uploadAttachment } = useNotas();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -42,6 +42,7 @@ const AddNota = () => {
   const [submitting, setSubmitting] = useState(false);
   const [parsing, setParsing] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
 
   const handleDescricaoChange = (value: string) => {
     const s = sugerirSetor(value);
@@ -50,25 +51,27 @@ const AddNota = () => {
   };
 
   const handleFileUpload = async (file: File) => {
-    const allowedTypes = ["text/xml", "application/xml", "application/pdf", "text/plain"];
     const isXML = file.name.endsWith(".xml");
     const isPDF = file.name.endsWith(".pdf");
+    const isTXT = file.name.endsWith(".txt");
 
-    if (!allowedTypes.includes(file.type) && !isXML && !isPDF) {
+    if (!isXML && !isPDF && !isTXT) {
       toast.error("Formato não suportado. Use XML, PDF ou TXT.");
       return;
     }
+
+    // Auto-attach the file
+    setAttachmentFile(file);
 
     setParsing(true);
     try {
       let content = "";
       let fileType = "text";
 
-      if (isXML || file.type.includes("xml")) {
+      if (isXML) {
         content = await file.text();
         fileType = "xml";
       } else if (isPDF) {
-        // For PDF, read as base64 and send to AI for text extraction
         const buffer = await file.arrayBuffer();
         const bytes = new Uint8Array(buffer);
         let binary = "";
@@ -124,6 +127,19 @@ const AddNota = () => {
     if (file) handleFileUpload(file);
   };
 
+  const onAttachmentSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      if (!["pdf", "xml"].includes(ext || "")) {
+        toast.error("Apenas PDF ou XML podem ser anexados.");
+        return;
+      }
+      setAttachmentFile(file);
+      toast.success(`Arquivo "${file.name}" será anexado à nota.`);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.numero || !form.fornecedor || !form.valor || !form.setor || !form.dataEmissao || !form.dataVencimento) {
@@ -132,7 +148,7 @@ const AddNota = () => {
     }
 
     setSubmitting(true);
-    await addNota({
+    const notaId = await addNota({
       numero: form.numero,
       tipo: form.tipo,
       fornecedor: form.fornecedor,
@@ -143,6 +159,11 @@ const AddNota = () => {
       status: "pendente",
       descricao: form.descricao,
     });
+
+    if (notaId && attachmentFile) {
+      await uploadAttachment(notaId, attachmentFile);
+    }
+
     setSubmitting(false);
     toast.success("Nota fiscal adicionada!");
     navigate("/notas");
@@ -225,28 +246,9 @@ const AddNota = () => {
           ))}
         </div>
 
-        <input
-          placeholder="Número da NF *"
-          value={form.numero}
-          onChange={(e) => setForm((f) => ({ ...f, numero: e.target.value }))}
-          className={inputClass}
-        />
-
-        <input
-          placeholder="Fornecedor / Prestador *"
-          value={form.fornecedor}
-          onChange={(e) => setForm((f) => ({ ...f, fornecedor: e.target.value }))}
-          className={inputClass}
-        />
-
-        <input
-          type="number"
-          step="0.01"
-          placeholder="Valor (R$) *"
-          value={form.valor}
-          onChange={(e) => setForm((f) => ({ ...f, valor: e.target.value }))}
-          className={inputClass}
-        />
+        <input placeholder="Número da NF *" value={form.numero} onChange={(e) => setForm((f) => ({ ...f, numero: e.target.value }))} className={inputClass} />
+        <input placeholder="Fornecedor / Prestador *" value={form.fornecedor} onChange={(e) => setForm((f) => ({ ...f, fornecedor: e.target.value }))} className={inputClass} />
+        <input type="number" step="0.01" placeholder="Valor (R$) *" value={form.valor} onChange={(e) => setForm((f) => ({ ...f, valor: e.target.value }))} className={inputClass} />
 
         {/* Descrição com IA */}
         <div className="space-y-2">
@@ -273,9 +275,7 @@ const AddNota = () => {
         >
           <option value="">Selecione o setor *</option>
           {SETORES.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
+            <option key={s} value={s}>{s}</option>
           ))}
         </select>
 
@@ -298,6 +298,43 @@ const AddNota = () => {
               className={inputClass + " min-w-0 max-w-full text-xs box-border"}
             />
           </div>
+        </div>
+
+        {/* Attachment section */}
+        <div className="space-y-2">
+          <label className="text-xs text-muted-foreground block">Anexar PDF/XML (opcional)</label>
+          {attachmentFile ? (
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-success/10 border border-success/20">
+              <FileCheck className="w-5 h-5 text-success flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">{attachmentFile.name}</p>
+                <p className="text-[10px] text-muted-foreground">{(attachmentFile.size / 1024).toFixed(0)} KB</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAttachmentFile(null)}
+                className="text-xs text-destructive hover:underline flex-shrink-0"
+              >
+                Remover
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => document.getElementById("attachment-input")?.click()}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-secondary text-secondary-foreground text-sm hover:bg-secondary/80 transition-colors"
+            >
+              <Paperclip className="w-4 h-4" />
+              Anexar arquivo
+            </button>
+          )}
+          <input
+            id="attachment-input"
+            type="file"
+            accept=".pdf,.xml"
+            onChange={onAttachmentSelect}
+            className="hidden"
+          />
         </div>
 
         <button
