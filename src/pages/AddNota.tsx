@@ -279,23 +279,23 @@ const AddNota = () => {
           ))}
         </select>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div className="min-w-0">
+        <div className="grid grid-cols-2 gap-3 overflow-hidden">
+          <div className="min-w-0 overflow-hidden">
             <label className="text-xs text-muted-foreground mb-1 block">Emissão *</label>
             <input
               type="date"
               value={form.dataEmissao}
               onChange={(e) => setForm((f) => ({ ...f, dataEmissao: e.target.value }))}
-              className={inputClass + " w-full min-w-0 text-xs"}
+              className={inputClass + " min-w-0 max-w-full text-xs box-border"}
             />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 overflow-hidden">
             <label className="text-xs text-muted-foreground mb-1 block">Vencimento *</label>
             <input
               type="date"
               value={form.dataVencimento}
               onChange={(e) => setForm((f) => ({ ...f, dataVencimento: e.target.value }))}
-              className={inputClass + " w-full min-w-0 text-xs"}
+              className={inputClass + " min-w-0 max-w-full text-xs box-border"}
             />
           </div>
         </div>
