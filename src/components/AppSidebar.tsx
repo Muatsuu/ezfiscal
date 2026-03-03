@@ -1,7 +1,9 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, FileText, BarChart3, CalendarDays, Building2, PlusCircle, Sun, Moon, LogOut } from "lucide-react";
+import { LayoutDashboard, FileText, BarChart3, CalendarDays, Building2, PlusCircle, Sun, Moon, LogOut, Shield } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useEmpresa } from "@/contexts/EmpresaContext";
+import EmpresaSelector from "./EmpresaSelector";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
@@ -16,6 +18,7 @@ const AppSidebar = () => {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const { user, signOut } = useAuth();
+  const { isAdmin } = useEmpresa();
 
   return (
     <aside className="hidden lg:flex flex-col w-[240px] h-screen fixed top-0 left-0 bg-sidebar border-r border-sidebar-border z-40">
@@ -30,7 +33,12 @@ const AppSidebar = () => {
         </div>
       </div>
 
-      {/* Add button at top */}
+      {/* Empresa Selector */}
+      <div className="px-4 mb-3">
+        <EmpresaSelector />
+      </div>
+
+      {/* Add button */}
       <div className="px-4 mb-4">
         <button
           onClick={() => navigate("/adicionar")}
@@ -61,6 +69,22 @@ const AppSidebar = () => {
             </NavLink>
           );
         })}
+
+        {/* Admin link */}
+        {isAdmin && (
+          <NavLink
+            to="/admin"
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+              location.pathname === "/admin"
+                ? "bg-primary/10 text-primary"
+                : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-foreground"
+            }`}
+          >
+            <Shield className="w-[18px] h-[18px]" />
+            <span>Administração</span>
+            {location.pathname === "/admin" && <div className="w-1.5 h-1.5 rounded-full bg-primary ml-auto" />}
+          </NavLink>
+        )}
       </nav>
 
       {/* Bottom section */}

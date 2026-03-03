@@ -1,7 +1,8 @@
 import { NotaFiscal } from "@/types/notaFiscal";
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useEmpresa } from "@/contexts/EmpresaContext";
 import { toast } from "sonner";
 
 interface NFContextType {
@@ -30,6 +31,7 @@ export const NFProvider = ({ children }: { children: ReactNode }) => {
   const [notas, setNotas] = useState<NotaFiscal[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { empresaAtiva } = useEmpresa();
 
   const fetchNotas = useCallback(async () => {
     if (!user) {
@@ -37,10 +39,17 @@ export const NFProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
       return;
     }
-    const { data, error } = await supabase
+    let query = supabase
       .from("notas_fiscais")
       .select("*")
       .order("created_at", { ascending: false });
+
+    // Filter by active empresa if set
+    if (empresaAtiva) {
+      query = query.eq("empresa_id", empresaAtiva.id);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error("Error fetching notas:", error);
@@ -58,12 +67,13 @@ export const NFProvider = ({ children }: { children: ReactNode }) => {
           dataVencimento: d.data_vencimento,
           status: d.status as "pendente" | "paga" | "vencida",
           descricao: d.descricao || undefined,
-          attachmentPath: (d as any).attachment_path || undefined,
+          attachmentPath: d.attachment_path || undefined,
+          empresaId: d.empresa_id || undefined,
         }))
       );
     }
     setLoading(false);
-  }, [user]);
+  }, [user, empresaAtiva]);
 
   useEffect(() => {
     fetchNotas();
@@ -82,6 +92,7 @@ export const NFProvider = ({ children }: { children: ReactNode }) => {
       data_vencimento: nota.dataVencimento,
       status: nota.status,
       descricao: nota.descricao || null,
+      empresa_id: empresaAtiva?.id || null,
     }).select("id").single();
     if (error) {
       console.error("Error adding nota:", error);
@@ -93,7 +104,6 @@ export const NFProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const removeNota = async (id: string) => {
-    // Also remove attachment if exists
     const nota = notas.find(n => n.id === id);
     if (nota?.attachmentPath) {
       await supabase.storage.from("nf-attachments").remove([nota.attachmentPath]);
@@ -144,7 +154,6 @@ export const NFProvider = ({ children }: { children: ReactNode }) => {
       return null;
     }
 
-    // Save path to nota
     await updateNota(notaId, { attachmentPath: path });
     return path;
   };
@@ -152,7 +161,7 @@ export const NFProvider = ({ children }: { children: ReactNode }) => {
   const getAttachmentUrl = async (path: string): Promise<string | null> => {
     const { data } = await supabase.storage
       .from("nf-attachments")
-      .createSignedUrl(path, 3600); // 1 hour
+      .createSignedUrl(path, 3600);
     return data?.signedUrl || null;
   };
 

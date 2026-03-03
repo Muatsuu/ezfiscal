@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotas } from "@/contexts/NFContext";
+import { useEmpresa } from "@/contexts/EmpresaContext";
+import { useAuditLog } from "@/hooks/useAuditLog";
 import { toast } from "sonner";
 import { Plus, Search, Pencil, Trash2, Building2, TrendingUp, X } from "lucide-react";
 import {
@@ -26,6 +28,8 @@ interface Fornecedor {
 const Fornecedores = () => {
   const { user } = useAuth();
   const { notas } = useNotas();
+  const { empresaAtiva } = useEmpresa();
+  const { log } = useAuditLog();
   const [fornecedores, setFornecedores] = useState<Fornecedor[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -39,17 +43,18 @@ const Fornecedores = () => {
 
   const fetchFornecedores = useCallback(async () => {
     if (!user) return;
-    const { data, error } = await supabase
-      .from("fornecedores")
-      .select("*")
-      .order("nome");
+    let query = supabase.from("fornecedores").select("*").order("nome");
+    if (empresaAtiva) {
+      query = query.eq("empresa_id", empresaAtiva.id);
+    }
+    const { data, error } = await query;
     if (error) {
       toast.error("Erro ao carregar fornecedores");
     } else {
       setFornecedores(data || []);
     }
     setLoading(false);
-  }, [user]);
+  }, [user, empresaAtiva]);
 
   useEffect(() => { fetchFornecedores(); }, [fetchFornecedores]);
 
@@ -106,13 +111,15 @@ const Fornecedores = () => {
       if (error) { toast.error("Erro ao atualizar"); return; }
       toast.success("Fornecedor atualizado!");
     } else {
-      const { error } = await supabase.from("fornecedores").insert({
+      const { data: newF, error } = await supabase.from("fornecedores").insert({
         user_id: user.id, nome: form.nome, cnpj: form.cnpj || null,
         contato: form.contato || null, email: form.email || null,
         telefone: form.telefone || null, endereco: form.endereco || null,
         observacoes: form.observacoes || null,
-      });
+        empresa_id: empresaAtiva?.id || null,
+      }).select("id").single();
       if (error) { toast.error("Erro ao cadastrar"); return; }
+      await log("criar", "fornecedor", newF?.id, { nome: form.nome });
       toast.success("Fornecedor cadastrado!");
     }
     resetForm();
