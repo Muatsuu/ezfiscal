@@ -41,7 +41,7 @@ const AddNota = () => {
   const [sugestao, setSugestao] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [parsing, setParsing] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
+  
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
 
   const handleDescricaoChange = (value: string) => {
@@ -115,12 +115,8 @@ const AddNota = () => {
     }
   };
 
-  const onDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file) handleFileUpload(file);
-  };
+
+
 
   const onFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -178,14 +174,7 @@ const AddNota = () => {
 
       {/* Upload Zone */}
       <div
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={onDrop}
-        className={`relative border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${
-          dragOver
-            ? "border-primary bg-primary/5"
-            : "border-border hover:border-primary/50"
-        }`}
+        className="relative border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer border-border hover:border-primary/50"
         onClick={() => document.getElementById("file-input")?.click()}
       >
         <input
@@ -207,7 +196,7 @@ const AddNota = () => {
               <Upload className="w-6 h-6 text-primary" />
             </div>
             <p className="text-sm font-medium text-foreground">
-              Arraste um arquivo ou toque para selecionar
+              Toque para selecionar um arquivo
             </p>
             <p className="text-xs text-muted-foreground">
               XML, PDF ou TXT · A IA preenche os campos automaticamente
