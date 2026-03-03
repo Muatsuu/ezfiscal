@@ -1,6 +1,7 @@
 import { useNotas } from "@/contexts/NFContext";
+import { useAuditLog } from "@/hooks/useAuditLog";
 import { useState, useMemo } from "react";
-import { Search, Filter, Trash2, SlidersHorizontal, X, Pencil, AlertTriangle, FileText, PlusCircle } from "lucide-react";
+import { Search, Trash2, SlidersHorizontal, X, Pencil, AlertTriangle, FileText, PlusCircle, LayoutGrid, List } from "lucide-react";
 import { SETORES } from "@/types/notaFiscal";
 import EditNotaModal from "@/components/EditNotaModal";
 import type { NotaFiscal } from "@/types/notaFiscal";
@@ -13,6 +14,7 @@ import { toast } from "sonner";
 
 const NotasList = () => {
   const { notas, removeNota, updateNota } = useNotas();
+  const { log } = useAuditLog();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("todos");
@@ -25,6 +27,7 @@ const NotasList = () => {
   const [editingNota, setEditingNota] = useState<NotaFiscal | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<NotaFiscal | null>(null);
   const [payTarget, setPayTarget] = useState<NotaFiscal | null>(null);
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
 
   const filtered = useMemo(() => {
     return notas.filter((n) => {
@@ -51,12 +54,22 @@ const NotasList = () => {
     setDateFrom(""); setDateTo(""); setValorMin(""); setValorMax(""); setSearch("");
   };
 
-  const handleConfirmDelete = () => {
-    if (deleteTarget) { removeNota(deleteTarget.id); toast.success("Nota fiscal excluída"); setDeleteTarget(null); }
+  const handleConfirmDelete = async () => {
+    if (deleteTarget) {
+      await removeNota(deleteTarget.id);
+      await log("excluir", "nota_fiscal", deleteTarget.id, { numero: deleteTarget.numero, fornecedor: deleteTarget.fornecedor });
+      toast.success("Nota fiscal excluída");
+      setDeleteTarget(null);
+    }
   };
 
-  const handleConfirmPay = () => {
-    if (payTarget) { updateNota(payTarget.id, { status: "paga" }); toast.success("Nota marcada como paga"); setPayTarget(null); }
+  const handleConfirmPay = async () => {
+    if (payTarget) {
+      await updateNota(payTarget.id, { status: "paga" });
+      await log("status_change", "nota_fiscal", payTarget.id, { de: "pendente", para: "paga", numero: payTarget.numero });
+      toast.success("Nota marcada como paga");
+      setPayTarget(null);
+    }
   };
 
   const formatCurrency = (value: number) =>
@@ -72,25 +85,53 @@ const NotasList = () => {
   const inputClass =
     "w-full px-3 py-2.5 rounded-xl bg-secondary text-foreground text-sm border-0 outline-none focus:ring-2 focus:ring-primary/30 transition-all";
 
+  const statusBadge = (status: string) => {
+    const cls = status === "paga"
+      ? "bg-success/10 text-success"
+      : status === "vencida"
+      ? "bg-destructive/10 text-destructive"
+      : "bg-warning/10 text-warning";
+    return `text-[10px] font-medium px-2 py-0.5 rounded-full ${cls}`;
+  };
+
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-foreground">Notas Fiscais</h2>
-        <button
-          onClick={() => setShowAdvanced(!showAdvanced)}
-          className={`relative p-2.5 rounded-xl transition-all ${
-            showAdvanced || activeFiltersCount > 0
-              ? "bg-primary/10 text-primary"
-              : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-          }`}
-        >
-          <SlidersHorizontal className="w-4 h-4" />
-          {activeFiltersCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] flex items-center justify-center font-bold">
-              {activeFiltersCount}
-            </span>
-          )}
-        </button>
+        <div className="flex gap-2">
+          {/* View mode toggle */}
+          <div className="flex bg-secondary rounded-xl overflow-hidden">
+            <button
+              onClick={() => setViewMode("cards")}
+              className={`p-2.5 transition-all ${viewMode === "cards" ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}
+              title="Visualização em cards"
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode("table")}
+              className={`p-2.5 transition-all ${viewMode === "table" ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}
+              title="Visualização em tabela"
+            >
+              <List className="w-4 h-4" />
+            </button>
+          </div>
+          <button
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className={`relative p-2.5 rounded-xl transition-all ${
+              showAdvanced || activeFiltersCount > 0
+                ? "bg-primary/10 text-primary"
+                : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            }`}
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            {activeFiltersCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] flex items-center justify-center font-bold">
+                {activeFiltersCount}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Search */}
@@ -168,20 +209,21 @@ const NotasList = () => {
         {filtered.length} nota{filtered.length !== 1 ? "s" : ""} encontrada{filtered.length !== 1 ? "s" : ""}
       </p>
 
-      {/* List */}
-      <div className="space-y-3">
-        {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center">
-              <FileText className="w-7 h-7 text-muted-foreground/30" />
-            </div>
-            <p className="text-sm text-muted-foreground">Nenhuma nota encontrada</p>
-            <button onClick={() => navigate("/adicionar")} className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
-              <PlusCircle className="w-3.5 h-3.5" /> Cadastrar nota fiscal
-            </button>
+      {/* Empty State */}
+      {filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 gap-3">
+          <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center">
+            <FileText className="w-7 h-7 text-muted-foreground/30" />
           </div>
-        ) : (
-          filtered.map((nota) => (
+          <p className="text-sm text-muted-foreground">Nenhuma nota encontrada</p>
+          <button onClick={() => navigate("/adicionar")} className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
+            <PlusCircle className="w-3.5 h-3.5" /> Cadastrar nota fiscal
+          </button>
+        </div>
+      ) : viewMode === "cards" ? (
+        /* Card View */
+        <div className="space-y-3">
+          {filtered.map((nota) => (
             <div
               key={nota.id}
               className="glass-card rounded-2xl p-5 group hover:border-border/60 transition-all animate-fade-in"
@@ -194,11 +236,7 @@ const NotasList = () => {
                     }`}>
                       {nota.tipo === "servico" ? "Serviço" : "Fornecedor"}
                     </span>
-                    <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
-                      nota.status === "paga" ? "bg-success/10 text-success"
-                        : nota.status === "vencida" ? "bg-destructive/10 text-destructive"
-                        : "bg-warning/10 text-warning"
-                    }`}>
+                    <span className={statusBadge(nota.status)}>
                       {nota.status.charAt(0).toUpperCase() + nota.status.slice(1)}
                     </span>
                   </div>
@@ -228,9 +266,61 @@ const NotasList = () => {
                 </div>
               </div>
             </div>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        /* Table View */
+        <div className="glass-card rounded-2xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-border/30">
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground uppercase tracking-wider">Número</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground uppercase tracking-wider">Fornecedor</th>
+                  <th className="text-left px-4 py-3 font-semibold text-muted-foreground uppercase tracking-wider">Setor</th>
+                  <th className="text-right px-4 py-3 font-semibold text-muted-foreground uppercase tracking-wider">Valor</th>
+                  <th className="text-center px-4 py-3 font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                  <th className="text-center px-4 py-3 font-semibold text-muted-foreground uppercase tracking-wider">Emissão</th>
+                  <th className="text-center px-4 py-3 font-semibold text-muted-foreground uppercase tracking-wider">Vencimento</th>
+                  <th className="text-right px-4 py-3 font-semibold text-muted-foreground uppercase tracking-wider">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((nota) => (
+                  <tr key={nota.id} className="border-b border-border/10 hover:bg-muted/30 transition-colors group">
+                    <td className="px-4 py-3 font-medium text-foreground">{nota.numero}</td>
+                    <td className="px-4 py-3 text-foreground truncate max-w-[200px]">{nota.fornecedor}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{nota.setor}</td>
+                    <td className="px-4 py-3 text-right font-semibold text-foreground">{formatCurrency(nota.valor)}</td>
+                    <td className="px-4 py-3 text-center">
+                      <span className={statusBadge(nota.status)}>
+                        {nota.status.charAt(0).toUpperCase() + nota.status.slice(1)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-center text-muted-foreground">{new Date(nota.dataEmissao).toLocaleDateString("pt-BR")}</td>
+                    <td className="px-4 py-3 text-center text-muted-foreground">{new Date(nota.dataVencimento).toLocaleDateString("pt-BR")}</td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex gap-1 justify-end lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                        {nota.status === "pendente" && (
+                          <button onClick={() => setPayTarget(nota)} className="text-[10px] px-2 py-1 rounded-lg bg-success/10 text-success font-medium">
+                            Pagar
+                          </button>
+                        )}
+                        <button onClick={() => setEditingNota(nota)} className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                          <Pencil className="w-3 h-3" />
+                        </button>
+                        <button onClick={() => setDeleteTarget(nota)} className="p-1.5 rounded-lg bg-destructive/10 text-destructive">
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {editingNota && <EditNotaModal nota={editingNota} onClose={() => setEditingNota(null)} />}
 

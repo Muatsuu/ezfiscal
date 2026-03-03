@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { NFProvider } from "./contexts/NFContext";
+import { EmpresaProvider } from "./contexts/EmpresaContext";
 import { useAuth } from "./hooks/useAuth";
 import AppLayout from "./components/AppLayout";
 import Dashboard from "./pages/Dashboard";
@@ -13,6 +14,7 @@ import Relatorios from "./pages/Relatorios";
 import Calendario from "./pages/Calendario";
 import Fornecedores from "./pages/Fornecedores";
 import Alertas from "./pages/Alertas";
+import Admin from "./pages/Admin";
 import InstallPage from "./pages/InstallPage";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
@@ -33,21 +35,24 @@ const ProtectedRoutes = () => {
   if (!user) return <Navigate to="/auth" replace />;
 
   return (
-    <NFProvider>
-      <AppLayout>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/notas" element={<NotasList />} />
-          <Route path="/adicionar" element={<AddNota />} />
-          <Route path="/relatorios" element={<Relatorios />} />
-          <Route path="/calendario" element={<Calendario />} />
-          <Route path="/fornecedores" element={<Fornecedores />} />
-          <Route path="/alertas" element={<Alertas />} />
-          <Route path="/instalar" element={<InstallPage />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </AppLayout>
-    </NFProvider>
+    <EmpresaProvider>
+      <NFProvider>
+        <AppLayout>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/notas" element={<NotasList />} />
+            <Route path="/adicionar" element={<AddNota />} />
+            <Route path="/relatorios" element={<Relatorios />} />
+            <Route path="/calendario" element={<Calendario />} />
+            <Route path="/fornecedores" element={<Fornecedores />} />
+            <Route path="/alertas" element={<Alertas />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/instalar" element={<InstallPage />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AppLayout>
+      </NFProvider>
+    </EmpresaProvider>
   );
 };
 

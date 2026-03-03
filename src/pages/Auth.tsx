@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Mail, Lock, LogIn, UserPlus } from "lucide-react";
+import { Mail, Lock, LogIn } from "lucide-react";
 
 const Auth = () => {
-  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -17,15 +16,9 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        toast.success("Login realizado com sucesso!");
-      } else {
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
-        toast.success("Conta criada! Verifique seu e-mail para confirmar.");
-      }
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      toast.success("Login realizado com sucesso!");
     } catch (error: any) {
       toast.error(error.message || "Erro na autenticação");
     } finally {
@@ -39,23 +32,6 @@ const Auth = () => {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-foreground">NF Control</h1>
           <p className="text-sm text-muted-foreground mt-1">Gestão de Notas Fiscais</p>
-        </div>
-
-        <div className="flex gap-2">
-          {(["login", "cadastro"] as const).map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => setIsLogin(tab === "login")}
-              className={`flex-1 py-3 rounded-xl text-sm font-medium transition-all ${
-                (tab === "login") === isLogin
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "bg-secondary text-secondary-foreground"
-              }`}
-            >
-              {tab === "login" ? "Entrar" : "Cadastrar"}
-            </button>
-          ))}
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -89,19 +65,17 @@ const Auth = () => {
             disabled={loading}
             className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm shadow-lg shadow-primary/20 active:scale-[0.98] transition-transform disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {loading ? (
-              "Carregando..."
-            ) : isLogin ? (
+            {loading ? "Carregando..." : (
               <>
                 <LogIn className="w-4 h-4" /> Entrar
-              </>
-            ) : (
-              <>
-                <UserPlus className="w-4 h-4" /> Cadastrar
               </>
             )}
           </button>
         </form>
+
+        <p className="text-[11px] text-muted-foreground text-center">
+          Acesso restrito. Solicite suas credenciais ao administrador.
+        </p>
       </div>
     </div>
   );

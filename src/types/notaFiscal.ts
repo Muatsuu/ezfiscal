@@ -10,6 +10,7 @@ export interface NotaFiscal {
   status: "pendente" | "paga" | "vencida";
   descricao?: string;
   attachmentPath?: string;
+  empresaId?: string;
 }
 
 export const SETORES = [

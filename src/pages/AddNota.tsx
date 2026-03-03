@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNotas } from "@/contexts/NFContext";
+import { useAuditLog } from "@/hooks/useAuditLog";
 import { SETORES } from "@/types/notaFiscal";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -25,6 +26,7 @@ function sugerirSetor(descricao: string): string | null {
 
 const AddNota = () => {
   const { addNota, uploadAttachment } = useNotas();
+  const { log } = useAuditLog();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -156,8 +158,11 @@ const AddNota = () => {
       descricao: form.descricao,
     });
 
-    if (notaId && attachmentFile) {
-      await uploadAttachment(notaId, attachmentFile);
+    if (notaId) {
+      await log("criar", "nota_fiscal", notaId, { numero: form.numero, fornecedor: form.fornecedor, valor: form.valor });
+      if (attachmentFile) {
+        await uploadAttachment(notaId, attachmentFile);
+      }
     }
 
     setSubmitting(false);
