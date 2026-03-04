@@ -1,9 +1,11 @@
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { LayoutDashboard, FileText, BarChart3, CalendarDays, Building2, PlusCircle, Sun, Moon, LogOut, Shield } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useEmpresa } from "@/contexts/EmpresaContext";
 import EmpresaSelector from "./EmpresaSelector";
+import AddNotaModal from "./AddNotaModal";
+import { useState } from "react";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
@@ -15,106 +17,110 @@ const navItems = [
 
 const AppSidebar = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
   const { user, signOut } = useAuth();
   const { isAdmin } = useEmpresa();
+  const [showAddModal, setShowAddModal] = useState(false);
 
   return (
-    <aside className="hidden lg:flex flex-col w-[240px] h-screen fixed top-0 left-0 bg-sidebar border-r border-sidebar-border z-40">
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-5 py-7">
-        <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center">
-          <FileText className="w-5 h-5 text-primary" />
+    <>
+      <aside className="hidden lg:flex flex-col w-[240px] h-screen fixed top-0 left-0 bg-sidebar border-r border-sidebar-border z-40">
+        {/* Logo */}
+        <div className="flex items-center gap-3 px-5 py-7">
+          <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center">
+            <FileText className="w-5 h-5 text-primary" />
+          </div>
+          <div className="flex-1">
+            <h1 className="text-sm font-bold text-foreground tracking-tight">NF Manager</h1>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Gestão de Notas</p>
+          </div>
         </div>
-        <div className="flex-1">
-          <h1 className="text-sm font-bold text-foreground tracking-tight">NF Manager</h1>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Gestão de Notas</p>
+
+        {/* Empresa Selector */}
+        <div className="px-4 mb-3">
+          <EmpresaSelector />
         </div>
-      </div>
 
-      {/* Empresa Selector */}
-      <div className="px-4 mb-3">
-        <EmpresaSelector />
-      </div>
+        {/* Add button */}
+        <div className="px-4 mb-4">
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-primary/10 text-primary font-semibold text-sm hover:bg-primary/20 transition-all border border-primary/20"
+          >
+            <PlusCircle className="w-4 h-4" />
+            Nova Nota Fiscal
+          </button>
+        </div>
 
-      {/* Add button */}
-      <div className="px-4 mb-4">
-        <button
-          onClick={() => navigate("/adicionar")}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-primary/10 text-primary font-semibold text-sm hover:bg-primary/20 transition-all border border-primary/20"
-        >
-          <PlusCircle className="w-4 h-4" />
-          Nova Nota Fiscal
-        </button>
-      </div>
+        {/* Nav */}
+        <nav className="flex-1 px-3 space-y-0.5">
+          {navItems.map(({ to, icon: Icon, label }) => {
+            const isActive = location.pathname === to;
+            return (
+              <NavLink
+                key={to}
+                to={to}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                  isActive
+                    ? "bg-primary/10 text-primary"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-foreground"
+                }`}
+              >
+                <Icon className="w-[18px] h-[18px]" />
+                <span>{label}</span>
+                {isActive && <div className="w-1.5 h-1.5 rounded-full bg-primary ml-auto" />}
+              </NavLink>
+            );
+          })}
 
-      {/* Nav */}
-      <nav className="flex-1 px-3 space-y-0.5">
-        {navItems.map(({ to, icon: Icon, label }) => {
-          const isActive = location.pathname === to;
-          return (
+          {/* Admin link */}
+          {isAdmin && (
             <NavLink
-              key={to}
-              to={to}
+              to="/admin"
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                isActive
+                location.pathname === "/admin"
                   ? "bg-primary/10 text-primary"
                   : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-foreground"
               }`}
             >
-              <Icon className="w-[18px] h-[18px]" />
-              <span>{label}</span>
-              {isActive && <div className="w-1.5 h-1.5 rounded-full bg-primary ml-auto" />}
+              <Shield className="w-[18px] h-[18px]" />
+              <span>Administração</span>
+              {location.pathname === "/admin" && <div className="w-1.5 h-1.5 rounded-full bg-primary ml-auto" />}
             </NavLink>
-          );
-        })}
+          )}
+        </nav>
 
-        {/* Admin link */}
-        {isAdmin && (
-          <NavLink
-            to="/admin"
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-              location.pathname === "/admin"
-                ? "bg-primary/10 text-primary"
-                : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-foreground"
-            }`}
-          >
-            <Shield className="w-[18px] h-[18px]" />
-            <span>Administração</span>
-            {location.pathname === "/admin" && <div className="w-1.5 h-1.5 rounded-full bg-primary ml-auto" />}
-          </NavLink>
-        )}
-      </nav>
-
-      {/* Bottom section */}
-      <div className="px-4 pb-5 space-y-3">
-        <div className="flex items-center gap-2 px-1">
-          <button
-            onClick={toggleTheme}
-            className="p-2 rounded-lg hover:bg-sidebar-accent transition-colors text-muted-foreground"
-          >
-            {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </button>
-        </div>
-
-        <div className="border-t border-sidebar-border pt-3">
-          <div className="flex items-center justify-between px-1">
-            <span className="text-xs text-muted-foreground truncate max-w-[140px]">
-              {user?.email}
-            </span>
+        {/* Bottom section */}
+        <div className="px-4 pb-5 space-y-3">
+          <div className="flex items-center gap-2 px-1">
             <button
-              onClick={signOut}
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
-              title="Sair"
+              onClick={toggleTheme}
+              className="p-2 rounded-lg hover:bg-sidebar-accent transition-colors text-muted-foreground"
             >
-              <LogOut className="w-3.5 h-3.5" />
-              Sair
+              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
           </div>
+
+          <div className="border-t border-sidebar-border pt-3">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-xs text-muted-foreground truncate max-w-[140px]">
+                {user?.email}
+              </span>
+              <button
+                onClick={signOut}
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
+                title="Sair"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                Sair
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-    </aside>
+      </aside>
+
+      {showAddModal && <AddNotaModal onClose={() => setShowAddModal(false)} />}
+    </>
   );
 };
 

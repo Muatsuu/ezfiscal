@@ -4,8 +4,10 @@ import { useState, useMemo } from "react";
 import { Search, Trash2, SlidersHorizontal, X, Pencil, AlertTriangle, FileText, PlusCircle, LayoutGrid, List } from "lucide-react";
 import { SETORES } from "@/types/notaFiscal";
 import EditNotaModal from "@/components/EditNotaModal";
+import AddNotaModal from "@/components/AddNotaModal";
 import type { NotaFiscal } from "@/types/notaFiscal";
 import { useNavigate } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -16,6 +18,8 @@ const NotasList = () => {
   const { notas, removeNota, updateNota } = useNotas();
   const { log } = useAuditLog();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const [showAddModal, setShowAddModal] = useState(false);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("todos");
   const [filterSetor, setFilterSetor] = useState<string>("todos");
@@ -216,7 +220,7 @@ const NotasList = () => {
             <FileText className="w-7 h-7 text-muted-foreground/30" />
           </div>
           <p className="text-sm text-muted-foreground">Nenhuma nota encontrada</p>
-          <button onClick={() => navigate("/adicionar")} className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
+          <button onClick={() => isMobile ? navigate("/adicionar") : setShowAddModal(true)} className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
             <PlusCircle className="w-3.5 h-3.5" /> Cadastrar nota fiscal
           </button>
         </div>
@@ -323,6 +327,7 @@ const NotasList = () => {
       )}
 
       {editingNota && <EditNotaModal nota={editingNota} onClose={() => setEditingNota(null)} />}
+      {showAddModal && <AddNotaModal onClose={() => setShowAddModal(false)} />}
 
       {/* Delete Confirmation */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
