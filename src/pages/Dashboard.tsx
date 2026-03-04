@@ -1,7 +1,9 @@
 import { useNotas } from "@/contexts/NFContext";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { FileText, DollarSign, Clock, CheckCircle, Zap, PlusCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
+import AddNotaModal from "@/components/AddNotaModal";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, CartesianGrid,
@@ -22,6 +24,16 @@ const SECTOR_COLORS: Record<string, string> = {
 const Dashboard = () => {
   const { notas } = useNotas();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  const handleAddNota = () => {
+    if (isMobile) {
+      navigate("/adicionar");
+    } else {
+      setShowAddModal(true);
+    }
+  };
 
   const today = new Date();
   const dateStr = today.toLocaleDateString("pt-BR", {
@@ -167,7 +179,7 @@ const Dashboard = () => {
                 <Zap className="w-6 h-6 text-muted-foreground/40" />
               </div>
               <p className="text-sm text-muted-foreground">Sem dados suficientes</p>
-              <button onClick={() => navigate("/adicionar")} className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
+              <button onClick={handleAddNota} className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
                 <PlusCircle className="w-3.5 h-3.5" /> Cadastrar primeira nota
               </button>
             </div>
@@ -296,13 +308,15 @@ const Dashboard = () => {
                 <FileText className="w-6 h-6 text-muted-foreground/40" />
               </div>
               <p className="text-sm text-muted-foreground">Nenhuma nota cadastrada</p>
-              <button onClick={() => navigate("/adicionar")} className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
+              <button onClick={handleAddNota} className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
                 <PlusCircle className="w-3.5 h-3.5" /> Cadastrar primeira nota
               </button>
             </div>
           )}
         </div>
       </div>
+
+      {showAddModal && <AddNotaModal onClose={() => setShowAddModal(false)} />}
     </div>
   );
 };
