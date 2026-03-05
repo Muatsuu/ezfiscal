@@ -63,6 +63,12 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
       return;
     }
 
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      toast.error("Arquivo muito grande. Máximo: 10MB.");
+      return;
+    }
+
     setAttachmentFile(file);
     setParsing(true);
     try {
@@ -125,8 +131,13 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
     const file = e.target.files?.[0];
     if (file) {
       const ext = file.name.split(".").pop()?.toLowerCase();
-      if (!["pdf", "xml"].includes(ext || "")) {
-        toast.error("Apenas PDF ou XML podem ser anexados.");
+      if (!["pdf", "xml", "jpg", "jpeg", "png"].includes(ext || "")) {
+        toast.error("Apenas PDF, XML ou imagens podem ser anexados.");
+        return;
+      }
+      const maxSize = 10 * 1024 * 1024;
+      if (file.size > maxSize) {
+        toast.error("Arquivo muito grande. Máximo: 10MB.");
         return;
       }
       setAttachmentFile(file);
@@ -172,7 +183,7 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4" onClick={onClose}>
       <div
-        className="bg-card border border-border rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 shadow-2xl animate-fade-in"
+        className="bg-card border border-border rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 shadow-2xl animate-fade-in"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-5">
@@ -184,7 +195,7 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
 
         {/* Upload Zone */}
         <div
-          className="relative border-2 border-dashed rounded-2xl p-5 text-center transition-all cursor-pointer border-border hover:border-primary/50 mb-4"
+          className="relative border-2 border-dashed rounded-2xl p-5 text-center transition-all cursor-pointer border-border hover:border-primary/50 mb-5"
           onClick={() => document.getElementById("modal-file-input")?.click()}
         >
           <input
@@ -208,9 +219,9 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
           )}
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
-          {/* Tipo */}
-          <div className="flex gap-2">
+        <form onSubmit={handleSubmit}>
+          {/* Tipo Toggle - full width above columns */}
+          <div className="flex gap-2 mb-4">
             {(["fornecedor", "servico"] as const).map((tipo) => (
               <button
                 key={tipo}
@@ -218,8 +229,8 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
                 onClick={() => setForm((f) => ({ ...f, tipo }))}
                 className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   form.tipo === tipo
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "bg-secondary text-secondary-foreground"
+                    ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30"
+                    : "bg-secondary text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {tipo === "fornecedor" ? "Fornecedor" : "Serviço"}
@@ -227,85 +238,107 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
             ))}
           </div>
 
-          <input placeholder="Número da NF *" value={form.numero} onChange={(e) => setForm((f) => ({ ...f, numero: e.target.value }))} className={inputClass} />
-          <input placeholder="Fornecedor / Prestador *" value={form.fornecedor} onChange={(e) => setForm((f) => ({ ...f, fornecedor: e.target.value }))} className={inputClass} />
-          <input type="number" step="0.01" placeholder="Valor (R$) *" value={form.valor} onChange={(e) => setForm((f) => ({ ...f, valor: e.target.value }))} className={inputClass} />
-
-          {/* Descrição com IA */}
-          <div className="space-y-2">
-            <textarea
-              placeholder="Descrição (a IA sugere o setor automaticamente)"
-              value={form.descricao}
-              onChange={(e) => handleDescricaoChange(e.target.value)}
-              rows={2}
-              className={inputClass + " resize-none"}
-            />
-            {sugestao && (
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent/10 text-accent text-xs font-medium animate-fade-in">
-                <Sparkles className="w-3 h-3" />
-                Setor sugerido: {sugestao} ✓
+          {/* Two-column layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-3">
+            {/* Left Column - Identification */}
+            <div className="space-y-3">
+              <div>
+                <label className="text-[11px] text-muted-foreground mb-1.5 block font-medium">Número da NF *</label>
+                <input placeholder="Ex: 001234" value={form.numero} onChange={(e) => setForm((f) => ({ ...f, numero: e.target.value }))} className={inputClass} />
               </div>
-            )}
-          </div>
-
-          <select
-            value={form.setor}
-            onChange={(e) => setForm((f) => ({ ...f, setor: e.target.value }))}
-            className={inputClass + " appearance-none"}
-          >
-            <option value="">Selecione o setor *</option>
-            {SETORES.map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
-
-          <div className="grid grid-cols-2 gap-3 overflow-hidden">
-            <div className="min-w-0 overflow-hidden">
-              <label className="text-xs text-muted-foreground mb-1 block">Emissão *</label>
-              <input type="date" value={form.dataEmissao} onChange={(e) => setForm((f) => ({ ...f, dataEmissao: e.target.value }))} className={inputClass + " min-w-0 max-w-full text-xs box-border"} />
+              <div>
+                <label className="text-[11px] text-muted-foreground mb-1.5 block font-medium">Fornecedor / Prestador *</label>
+                <input placeholder="Nome ou razão social" value={form.fornecedor} onChange={(e) => setForm((f) => ({ ...f, fornecedor: e.target.value }))} className={inputClass} />
+              </div>
+              <div>
+                <label className="text-[11px] text-muted-foreground mb-1.5 block font-medium">Valor (R$) *</label>
+                <input type="number" step="0.01" placeholder="0,00" value={form.valor} onChange={(e) => setForm((f) => ({ ...f, valor: e.target.value }))} className={inputClass} />
+              </div>
+              <div>
+                <label className="text-[11px] text-muted-foreground mb-1.5 block font-medium">Setor *</label>
+                <select
+                  value={form.setor}
+                  onChange={(e) => setForm((f) => ({ ...f, setor: e.target.value }))}
+                  className={inputClass + " appearance-none"}
+                >
+                  <option value="">Selecione o setor</option>
+                  {SETORES.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
             </div>
-            <div className="min-w-0 overflow-hidden">
-              <label className="text-xs text-muted-foreground mb-1 block">Vencimento *</label>
-              <input type="date" value={form.dataVencimento} onChange={(e) => setForm((f) => ({ ...f, dataVencimento: e.target.value }))} className={inputClass + " min-w-0 max-w-full text-xs box-border"} />
-            </div>
-          </div>
 
-          {/* Attachment */}
-          <div className="space-y-2">
-            <label className="text-xs text-muted-foreground block">Anexar PDF/XML (opcional)</label>
-            {attachmentFile ? (
-              <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-success/10 border border-success/20">
-                <FileCheck className="w-4 h-4 text-success flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-foreground truncate">{attachmentFile.name}</p>
-                  <p className="text-[10px] text-muted-foreground">{(attachmentFile.size / 1024).toFixed(0)} KB</p>
+            {/* Right Column - Dates, Description, Attachment */}
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] text-muted-foreground mb-1.5 block font-medium">Emissão *</label>
+                  <input type="date" value={form.dataEmissao} onChange={(e) => setForm((f) => ({ ...f, dataEmissao: e.target.value }))} className={inputClass + " text-xs"} />
                 </div>
-                <button type="button" onClick={() => setAttachmentFile(null)} className="text-xs text-destructive hover:underline flex-shrink-0">
-                  Remover
-                </button>
+                <div>
+                  <label className="text-[11px] text-muted-foreground mb-1.5 block font-medium">Vencimento *</label>
+                  <input type="date" value={form.dataVencimento} onChange={(e) => setForm((f) => ({ ...f, dataVencimento: e.target.value }))} className={inputClass + " text-xs"} />
+                </div>
               </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => document.getElementById("modal-attachment-input")?.click()}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-secondary text-secondary-foreground text-sm hover:bg-secondary/80 transition-colors"
-              >
-                <Paperclip className="w-4 h-4" />
-                Anexar arquivo
-              </button>
-            )}
-            <input
-              id="modal-attachment-input"
-              type="file"
-              accept=".pdf,.xml"
-              onChange={onAttachmentSelect}
-              className="hidden"
-            />
+
+              {/* Descrição com IA */}
+              <div className="space-y-2">
+                <label className="text-[11px] text-muted-foreground mb-1.5 block font-medium">Descrição</label>
+                <textarea
+                  placeholder="Descreva os itens (a IA sugere o setor)"
+                  value={form.descricao}
+                  onChange={(e) => handleDescricaoChange(e.target.value)}
+                  rows={3}
+                  className={inputClass + " resize-none"}
+                />
+                {sugestao && (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent/10 text-accent text-xs font-medium animate-fade-in">
+                    <Sparkles className="w-3 h-3" />
+                    Setor sugerido: {sugestao} ✓
+                  </div>
+                )}
+              </div>
+
+              {/* Attachment */}
+              <div className="space-y-2">
+                <label className="text-[11px] text-muted-foreground block font-medium">Anexo (opcional)</label>
+                {attachmentFile ? (
+                  <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-success/10 border border-success/20">
+                    <FileCheck className="w-4 h-4 text-success flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-foreground truncate">{attachmentFile.name}</p>
+                      <p className="text-[10px] text-muted-foreground">{(attachmentFile.size / 1024).toFixed(0)} KB</p>
+                    </div>
+                    <button type="button" onClick={() => setAttachmentFile(null)} className="text-xs text-destructive hover:underline flex-shrink-0">
+                      Remover
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById("modal-attachment-input")?.click()}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-secondary text-muted-foreground text-sm hover:text-foreground hover:bg-secondary/80 transition-colors"
+                  >
+                    <Paperclip className="w-4 h-4" />
+                    Anexar arquivo
+                  </button>
+                )}
+                <input
+                  id="modal-attachment-input"
+                  type="file"
+                  accept=".pdf,.xml,.jpg,.jpeg,.png"
+                  onChange={onAttachmentSelect}
+                  className="hidden"
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl bg-secondary text-secondary-foreground font-medium text-sm">
+          {/* Actions - full width */}
+          <div className="flex gap-3 pt-5 mt-2 border-t border-border/20">
+            <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl bg-secondary text-secondary-foreground font-medium text-sm hover:bg-secondary/80 transition-colors">
               Cancelar
             </button>
-            <button type="submit" disabled={submitting} className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-50">
+            <button type="submit" disabled={submitting} className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-50 shadow-md hover:brightness-110 transition-all">
               {submitting ? "Salvando..." : "Adicionar"}
             </button>
           </div>
