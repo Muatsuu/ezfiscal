@@ -4,6 +4,7 @@ import { FileText, DollarSign, Clock, CheckCircle, Zap, PlusCircle } from "lucid
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import AddNotaModal from "@/components/AddNotaModal";
+import { DashboardSkeleton } from "@/components/NotasSkeleton";
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, CartesianGrid,
@@ -22,7 +23,7 @@ const SECTOR_COLORS: Record<string, string> = {
 };
 
 const Dashboard = () => {
-  const { notas } = useNotas();
+  const { notas, loading } = useNotas();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [showAddModal, setShowAddModal] = useState(false);
@@ -101,6 +102,10 @@ const Dashboard = () => {
     }
     return null;
   };
+
+  if (loading) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div className="space-y-6 pt-2 overflow-x-hidden">
