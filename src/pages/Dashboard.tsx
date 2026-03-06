@@ -123,7 +123,7 @@ const Dashboard = () => {
           { icon: Clock, label: "A Pagar", value: formatCurrency(stats.totalPendente), colorClass: "text-warning", bgClass: "bg-warning/8" },
           { icon: CheckCircle, label: "Pago", value: formatCurrency(stats.totalPago), colorClass: "text-success", bgClass: "bg-success/8" },
         ].map((card) => (
-          <div key={card.label} className="glass-card rounded-2xl p-5 lg:p-6 group hover:border-border/60 transition-all">
+          <div key={card.label} className="glass-card rounded-2xl p-5 lg:p-6 group hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 hover-scale transition-all duration-200">
             <div className="flex items-center gap-2 mb-4">
               <div className={`w-8 h-8 rounded-lg ${card.bgClass} flex items-center justify-center`}>
                 <card.icon className={`w-4 h-4 ${card.colorClass}`} />

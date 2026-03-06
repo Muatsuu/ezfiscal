@@ -5,7 +5,7 @@ import { useNotas } from "@/contexts/NFContext";
 import { useEmpresa } from "@/contexts/EmpresaContext";
 import { useAuditLog } from "@/hooks/useAuditLog";
 import { toast } from "sonner";
-import { Plus, Search, Pencil, Trash2, Building2, TrendingUp, X } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Building2, FileText, DollarSign, Loader2 } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -36,6 +36,7 @@ const Fornecedores = () => {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Fornecedor | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const [form, setForm] = useState({
     nome: "", cnpj: "", contato: "", email: "", telefone: "", endereco: "", observacoes: "",
@@ -44,29 +45,24 @@ const Fornecedores = () => {
   const fetchFornecedores = useCallback(async () => {
     if (!user) return;
     let query = supabase.from("fornecedores").select("*").order("nome");
-    if (empresaAtiva) {
-      query = query.eq("empresa_id", empresaAtiva.id);
-    }
+    if (empresaAtiva) query = query.eq("empresa_id", empresaAtiva.id);
     const { data, error } = await query;
-    if (error) {
-      toast.error("Erro ao carregar fornecedores");
-    } else {
-      setFornecedores(data || []);
-    }
+    if (error) toast.error("Erro ao carregar fornecedores");
+    else setFornecedores(data || []);
     setLoading(false);
   }, [user, empresaAtiva]);
 
   useEffect(() => { fetchFornecedores(); }, [fetchFornecedores]);
 
   const fornecedorStats = useMemo(() => {
-    const stats: Record<string, { count: number; total: number; avg: number }> = {};
+    const stats: Record<string, { count: number; total: number; totalPago: number }> = {};
     notas.forEach((n) => {
       const key = n.fornecedor.toLowerCase().trim();
-      if (!stats[key]) stats[key] = { count: 0, total: 0, avg: 0 };
+      if (!stats[key]) stats[key] = { count: 0, total: 0, totalPago: 0 };
       stats[key].count++;
       stats[key].total += n.valor;
+      if (n.status === "paga") stats[key].totalPago += n.valor;
     });
-    Object.values(stats).forEach((s) => { s.avg = s.total / s.count; });
     return stats;
   }, [notas]);
 
@@ -87,13 +83,9 @@ const Fornecedores = () => {
   const openEdit = (f: Fornecedor) => {
     setEditing(f);
     setForm({
-      nome: f.nome,
-      cnpj: f.cnpj || "",
-      contato: f.contato || "",
-      email: f.email || "",
-      telefone: f.telefone || "",
-      endereco: f.endereco || "",
-      observacoes: f.observacoes || "",
+      nome: f.nome, cnpj: f.cnpj || "", contato: f.contato || "",
+      email: f.email || "", telefone: f.telefone || "",
+      endereco: f.endereco || "", observacoes: f.observacoes || "",
     });
     setShowForm(true);
   };
@@ -101,6 +93,7 @@ const Fornecedores = () => {
   const handleSubmit = async () => {
     if (!form.nome.trim()) { toast.error("Nome é obrigatório"); return; }
     if (!user) return;
+    setSubmitting(true);
 
     if (editing) {
       const { error } = await supabase.from("fornecedores").update({
@@ -108,7 +101,7 @@ const Fornecedores = () => {
         email: form.email || null, telefone: form.telefone || null,
         endereco: form.endereco || null, observacoes: form.observacoes || null,
       }).eq("id", editing.id);
-      if (error) { toast.error("Erro ao atualizar"); return; }
+      if (error) { toast.error("Erro ao atualizar"); setSubmitting(false); return; }
       toast.success("Fornecedor atualizado!");
     } else {
       const { data: newF, error } = await supabase.from("fornecedores").insert({
@@ -118,10 +111,11 @@ const Fornecedores = () => {
         observacoes: form.observacoes || null,
         empresa_id: empresaAtiva?.id || null,
       }).select("id").single();
-      if (error) { toast.error("Erro ao cadastrar"); return; }
+      if (error) { toast.error("Erro ao cadastrar"); setSubmitting(false); return; }
       await log("criar", "fornecedor", newF?.id, { nome: form.nome });
       toast.success("Fornecedor cadastrado!");
     }
+    setSubmitting(false);
     resetForm();
     fetchFornecedores();
   };
@@ -147,7 +141,7 @@ const Fornecedores = () => {
         </div>
         <button
           onClick={() => { resetForm(); setShowForm(true); }}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-semibold"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:brightness-110 transition-all hover-scale"
         >
           <Plus className="w-4 h-4" />
           Novo
@@ -168,25 +162,72 @@ const Fornecedores = () => {
       {/* List */}
       <div className="space-y-3">
         {loading ? (
-          <p className="text-sm text-muted-foreground text-center py-8">Carregando...</p>
+          /* Skeleton */
+          Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="glass-card rounded-2xl p-5 animate-pulse">
+              <div className="flex items-start justify-between">
+                <div className="space-y-2 flex-1">
+                  <div className="h-4 w-40 bg-muted rounded-lg" />
+                  <div className="h-3 w-28 bg-muted rounded-lg" />
+                </div>
+                <div className="flex gap-2">
+                  <div className="h-8 w-16 bg-muted rounded-lg" />
+                  <div className="h-8 w-16 bg-muted rounded-lg" />
+                </div>
+              </div>
+            </div>
+          ))
         ) : filtered.length === 0 ? (
-          <div className="text-center py-12">
-            <Building2 className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">Nenhum fornecedor encontrado</p>
+          /* Empty State */
+          <div className="flex flex-col items-center justify-center py-16 gap-4 animate-fade-in">
+            <div className="w-20 h-20 rounded-2xl bg-muted/50 flex items-center justify-center">
+              <Building2 className="w-9 h-9 text-muted-foreground/30" />
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-medium text-foreground mb-1">
+                {search ? "Nenhum fornecedor encontrado" : "Nenhum fornecedor cadastrado"}
+              </p>
+              <p className="text-xs text-muted-foreground max-w-[260px]">
+                {search
+                  ? "Tente ajustar a busca ou cadastre um novo fornecedor."
+                  : "Cadastre seu primeiro fornecedor para organizar suas compras e acompanhar gastos."}
+              </p>
+            </div>
+            {!search && (
+              <button
+                onClick={() => { resetForm(); setShowForm(true); }}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:brightness-110 transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                Cadastrar seu primeiro fornecedor
+              </button>
+            )}
           </div>
         ) : (
           filtered.map((f) => {
             const stats = fornecedorStats[f.nome.toLowerCase().trim()];
             return (
-              <div key={f.id} className="glass-card rounded-2xl p-4">
+              <div
+                key={f.id}
+                className="glass-card rounded-2xl p-5 group hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 transition-all duration-200 animate-fade-in"
+              >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">{f.nome}</p>
-                    {f.cnpj && <p className="text-xs text-muted-foreground mt-0.5">{f.cnpj}</p>}
-                    {f.telefone && <p className="text-xs text-muted-foreground">{f.telefone}</p>}
-                    {f.email && <p className="text-xs text-muted-foreground">{f.email}</p>}
+                    <div className="flex items-center gap-2.5 mb-1">
+                      <div className="w-9 h-9 rounded-xl bg-primary/8 flex items-center justify-center flex-shrink-0">
+                        <Building2 className="w-4 h-4 text-primary" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-foreground truncate">{f.nome}</p>
+                        {f.cnpj && <p className="text-[11px] text-muted-foreground">{f.cnpj}</p>}
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 ml-[46px] mt-1">
+                      {f.telefone && <p className="text-[11px] text-muted-foreground">{f.telefone}</p>}
+                      {f.email && <p className="text-[11px] text-muted-foreground">{f.email}</p>}
+                    </div>
                   </div>
-                  <div className="flex gap-1.5 ml-2">
+                  <div className="flex gap-1.5 ml-2 opacity-60 group-hover:opacity-100 transition-opacity">
                     <button onClick={() => openEdit(f)} className="p-2 rounded-lg hover:bg-secondary transition-colors">
                       <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
                     </button>
@@ -196,22 +237,28 @@ const Fornecedores = () => {
                   </div>
                 </div>
 
-                {stats && (
-                  <div className="mt-3 pt-3 border-t border-border/30 flex gap-4">
-                    <div>
-                      <p className="text-[10px] text-muted-foreground uppercase">Compras</p>
-                      <p className="text-sm font-semibold text-foreground">{stats.count}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-muted-foreground uppercase">Total</p>
-                      <p className="text-sm font-semibold text-foreground">{formatCurrency(stats.total)}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-muted-foreground uppercase">Ticket Médio</p>
-                      <p className="text-sm font-semibold text-primary">{formatCurrency(stats.avg)}</p>
-                    </div>
-                  </div>
-                )}
+                {/* Stats badges */}
+                <div className="mt-3 pt-3 border-t border-border/30 flex flex-wrap gap-2 ml-[46px]">
+                  {stats ? (
+                    <>
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/8 text-[11px] font-medium text-primary">
+                        <FileText className="w-3 h-3" />
+                        {stats.count} nota{stats.count !== 1 ? "s" : ""}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-accent/8 text-[11px] font-medium text-accent">
+                        <DollarSign className="w-3 h-3" />
+                        Total: {formatCurrency(stats.total)}
+                      </span>
+                      {stats.totalPago > 0 && (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-success/8 text-[11px] font-medium text-success">
+                          Pago: {formatCurrency(stats.totalPago)}
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-[11px] text-muted-foreground italic">Sem notas vinculadas</span>
+                  )}
+                </div>
               </div>
             );
           })
@@ -220,7 +267,7 @@ const Fornecedores = () => {
 
       {/* Form Dialog */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="max-w-sm max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-sm max-h-[85vh] overflow-y-auto animate-scale-in">
           <DialogHeader>
             <DialogTitle className="text-base">{editing ? "Editar" : "Novo"} Fornecedor</DialogTitle>
           </DialogHeader>
@@ -232,8 +279,19 @@ const Fornecedores = () => {
             <input placeholder="Telefone" value={form.telefone} onChange={(e) => setForm((f) => ({ ...f, telefone: e.target.value }))} className={inputClass} />
             <input placeholder="Endereço" value={form.endereco} onChange={(e) => setForm((f) => ({ ...f, endereco: e.target.value }))} className={inputClass} />
             <textarea placeholder="Observações" value={form.observacoes} onChange={(e) => setForm((f) => ({ ...f, observacoes: e.target.value }))} rows={2} className={inputClass + " resize-none"} />
-            <button onClick={handleSubmit} className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm">
-              {editing ? "Salvar Alterações" : "Cadastrar Fornecedor"}
+            <button
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-50 flex items-center justify-center gap-2 hover:brightness-110 transition-all"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                editing ? "Salvar Alterações" : "Cadastrar Fornecedor"
+              )}
             </button>
           </div>
         </DialogContent>

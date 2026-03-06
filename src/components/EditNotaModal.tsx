@@ -3,6 +3,7 @@ import { NotaFiscal, SETORES } from "@/types/notaFiscal";
 import { X, Sparkles, Paperclip, FileCheck, Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useNotas } from "@/contexts/NFContext";
+import FornecedorCombobox from "@/components/FornecedorCombobox";
 
 const KEYWORDS_SETOR: Record<string, string[]> = {
   Administrativo: ["escritório", "material", "papelaria", "expediente", "administrativo", "recepção", "secretaria"],
@@ -55,11 +56,8 @@ const EditNotaModal = ({ nota, onClose }: EditNotaModalProps) => {
     setDownloading(true);
     try {
       const url = await getAttachmentUrl(nota.attachmentPath);
-      if (url) {
-        window.open(url, "_blank");
-      } else {
-        toast.error("Erro ao gerar link do arquivo");
-      }
+      if (url) window.open(url, "_blank");
+      else toast.error("Erro ao gerar link do arquivo");
     } catch {
       toast.error("Erro ao baixar arquivo");
     }
@@ -97,9 +95,7 @@ const EditNotaModal = ({ nota, onClose }: EditNotaModalProps) => {
       descricao: form.descricao || undefined,
     });
 
-    if (newAttachment) {
-      await uploadAttachment(nota.id, newAttachment);
-    }
+    if (newAttachment) await uploadAttachment(nota.id, newAttachment);
 
     setSubmitting(false);
     toast.success("Nota fiscal atualizada!");
@@ -114,7 +110,7 @@ const EditNotaModal = ({ nota, onClose }: EditNotaModalProps) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4" onClick={onClose}>
       <div
-        className="bg-card border border-border rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 shadow-2xl animate-fade-in"
+        className="bg-card border border-border rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 shadow-2xl animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-5">
@@ -134,8 +130,8 @@ const EditNotaModal = ({ nota, onClose }: EditNotaModalProps) => {
                 onClick={() => setForm((f) => ({ ...f, tipo }))}
                 className={`flex-1 py-3 rounded-xl text-sm font-medium transition-all ${
                   form.tipo === tipo
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "bg-secondary text-secondary-foreground"
+                    ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30"
+                    : "bg-secondary text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {tipo === "fornecedor" ? "Fornecedor" : "Serviço"}
@@ -144,7 +140,16 @@ const EditNotaModal = ({ nota, onClose }: EditNotaModalProps) => {
           </div>
 
           <input placeholder="Número da NF *" value={form.numero} onChange={(e) => setForm((f) => ({ ...f, numero: e.target.value }))} className={inputClass} />
-          <input placeholder="Fornecedor / Prestador *" value={form.fornecedor} onChange={(e) => setForm((f) => ({ ...f, fornecedor: e.target.value }))} className={inputClass} />
+          
+          <div>
+            <label className="text-[11px] text-muted-foreground mb-1.5 block font-medium">Fornecedor / Prestador *</label>
+            <FornecedorCombobox
+              value={form.fornecedor}
+              onChange={(nome) => setForm((f) => ({ ...f, fornecedor: nome }))}
+              className={inputClass}
+            />
+          </div>
+
           <input type="number" step="0.01" placeholder="Valor (R$) *" value={form.valor} onChange={(e) => setForm((f) => ({ ...f, valor: e.target.value }))} className={inputClass} />
 
           {/* Descrição */}
@@ -196,27 +201,18 @@ const EditNotaModal = ({ nota, onClose }: EditNotaModalProps) => {
           {/* Attachment section */}
           <div className="space-y-2">
             <label className="text-xs text-muted-foreground block">Anexo PDF/XML</label>
-
-            {/* Existing attachment */}
             {nota.attachmentPath && !newAttachment && (
               <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20">
                 <FileCheck className="w-5 h-5 text-primary flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground">Arquivo anexado ({attachmentExt})</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleDownloadAttachment}
-                  disabled={downloading}
-                  className="flex items-center gap-1 text-xs text-primary hover:underline flex-shrink-0"
-                >
+                <button type="button" onClick={handleDownloadAttachment} disabled={downloading} className="flex items-center gap-1 text-xs text-primary hover:underline flex-shrink-0">
                   {downloading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
                   Baixar
                 </button>
               </div>
             )}
-
-            {/* New attachment or replace */}
             {newAttachment ? (
               <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-success/10 border border-success/20">
                 <FileCheck className="w-5 h-5 text-success flex-shrink-0" />
@@ -224,35 +220,30 @@ const EditNotaModal = ({ nota, onClose }: EditNotaModalProps) => {
                   <p className="text-sm font-medium text-foreground truncate">{newAttachment.name}</p>
                   <p className="text-[10px] text-muted-foreground">{(newAttachment.size / 1024).toFixed(0)} KB · Será salvo ao confirmar</p>
                 </div>
-                <button type="button" onClick={() => setNewAttachment(null)} className="text-xs text-destructive hover:underline flex-shrink-0">
-                  Remover
-                </button>
+                <button type="button" onClick={() => setNewAttachment(null)} className="text-xs text-destructive hover:underline flex-shrink-0">Remover</button>
               </div>
             ) : (
-              <button
-                type="button"
-                onClick={() => document.getElementById("edit-attachment-input")?.click()}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-secondary text-secondary-foreground text-sm hover:bg-secondary/80 transition-colors"
-              >
+              <button type="button" onClick={() => document.getElementById("edit-attachment-input")?.click()} className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-secondary text-secondary-foreground text-sm hover:bg-secondary/80 transition-colors">
                 <Paperclip className="w-4 h-4" />
                 {nota.attachmentPath ? "Substituir anexo" : "Anexar arquivo"}
               </button>
             )}
-            <input
-              id="edit-attachment-input"
-              type="file"
-              accept=".pdf,.xml"
-              onChange={onAttachmentSelect}
-              className="hidden"
-            />
+            <input id="edit-attachment-input" type="file" accept=".pdf,.xml" onChange={onAttachmentSelect} className="hidden" />
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl bg-secondary text-secondary-foreground font-medium text-sm">
+            <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl bg-secondary text-secondary-foreground font-medium text-sm hover:bg-secondary/80 transition-colors">
               Cancelar
             </button>
-            <button type="submit" disabled={submitting} className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-50">
-              {submitting ? "Salvando..." : "Salvar"}
+            <button type="submit" disabled={submitting} className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-50 hover:brightness-110 transition-all flex items-center justify-center gap-2">
+              {submitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                "Salvar"
+              )}
             </button>
           </div>
         </form>
