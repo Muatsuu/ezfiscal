@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useNotas } from "@/contexts/NFContext";
 import { useAuditLog } from "@/hooks/useAuditLog";
 import { supabase } from "@/integrations/supabase/client";
+import FornecedorCombobox from "@/components/FornecedorCombobox";
 
 const KEYWORDS_SETOR: Record<string, string[]> = {
   Administrativo: ["escritório", "material", "papelaria", "expediente", "administrativo", "recepção", "secretaria"],
@@ -43,6 +44,7 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
   });
 
   const [sugestao, setSugestao] = useState<string | null>(null);
+  const [setorFromHistory, setSetorFromHistory] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [parsing, setParsing] = useState(false);
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
@@ -51,6 +53,13 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
     const s = sugerirSetor(value);
     setForm((f) => ({ ...f, descricao: value, ...(s ? { setor: s } : {}) }));
     setSugestao(s);
+  };
+
+  const handleSetorSuggestion = (setor: string) => {
+    setSetorFromHistory(setor);
+    if (!form.setor) {
+      setForm((f) => ({ ...f, setor }));
+    }
   };
 
   const handleFileUpload = async (file: File) => {
@@ -63,7 +72,7 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
       return;
     }
 
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
       toast.error("Arquivo muito grande. Máximo: 10MB.");
       return;
@@ -183,7 +192,7 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4" onClick={onClose}>
       <div
-        className="bg-card border border-border rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 shadow-2xl animate-fade-in"
+        className="bg-card border border-border rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 shadow-2xl animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-5">
@@ -198,13 +207,7 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
           className="relative border-2 border-dashed rounded-2xl p-5 text-center transition-all cursor-pointer border-border hover:border-primary/50 mb-5"
           onClick={() => document.getElementById("modal-file-input")?.click()}
         >
-          <input
-            id="modal-file-input"
-            type="file"
-            accept=".xml,.pdf,.txt"
-            onChange={onFileSelect}
-            className="hidden"
-          />
+          <input id="modal-file-input" type="file" accept=".xml,.pdf,.txt" onChange={onFileSelect} className="hidden" />
           {parsing ? (
             <div className="flex flex-col items-center gap-2">
               <Loader2 className="w-7 h-7 text-primary animate-spin" />
@@ -220,7 +223,7 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
         </div>
 
         <form onSubmit={handleSubmit}>
-          {/* Tipo Toggle - full width above columns */}
+          {/* Tipo Toggle */}
           <div className="flex gap-2 mb-4">
             {(["fornecedor", "servico"] as const).map((tipo) => (
               <button
@@ -240,7 +243,7 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
 
           {/* Two-column layout */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-3">
-            {/* Left Column - Identification */}
+            {/* Left Column */}
             <div className="space-y-3">
               <div>
                 <label className="text-[11px] text-muted-foreground mb-1.5 block font-medium">Número da NF *</label>
@@ -248,7 +251,12 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
               </div>
               <div>
                 <label className="text-[11px] text-muted-foreground mb-1.5 block font-medium">Fornecedor / Prestador *</label>
-                <input placeholder="Nome ou razão social" value={form.fornecedor} onChange={(e) => setForm((f) => ({ ...f, fornecedor: e.target.value }))} className={inputClass} />
+                <FornecedorCombobox
+                  value={form.fornecedor}
+                  onChange={(nome) => setForm((f) => ({ ...f, fornecedor: nome }))}
+                  onSetorSuggestion={handleSetorSuggestion}
+                  className={inputClass}
+                />
               </div>
               <div>
                 <label className="text-[11px] text-muted-foreground mb-1.5 block font-medium">Valor (R$) *</label>
@@ -256,18 +264,20 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
               </div>
               <div>
                 <label className="text-[11px] text-muted-foreground mb-1.5 block font-medium">Setor *</label>
-                <select
-                  value={form.setor}
-                  onChange={(e) => setForm((f) => ({ ...f, setor: e.target.value }))}
-                  className={inputClass + " appearance-none"}
-                >
+                <select value={form.setor} onChange={(e) => setForm((f) => ({ ...f, setor: e.target.value }))} className={inputClass + " appearance-none"}>
                   <option value="">Selecione o setor</option>
                   {SETORES.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
+                {setorFromHistory && form.setor === setorFromHistory && (
+                  <div className="flex items-center gap-1.5 mt-1.5 px-2.5 py-1.5 rounded-lg bg-accent/10 text-accent text-[11px] font-medium animate-fade-in">
+                    <Sparkles className="w-3 h-3" />
+                    Setor sugerido pelo histórico ✓
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Right Column - Dates, Description, Attachment */}
+            {/* Right Column */}
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -280,7 +290,6 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
                 </div>
               </div>
 
-              {/* Descrição com IA */}
               <div className="space-y-2">
                 <label className="text-[11px] text-muted-foreground mb-1.5 block font-medium">Descrição</label>
                 <textarea
@@ -322,24 +331,25 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
                     Anexar arquivo
                   </button>
                 )}
-                <input
-                  id="modal-attachment-input"
-                  type="file"
-                  accept=".pdf,.xml,.jpg,.jpeg,.png"
-                  onChange={onAttachmentSelect}
-                  className="hidden"
-                />
+                <input id="modal-attachment-input" type="file" accept=".pdf,.xml,.jpg,.jpeg,.png" onChange={onAttachmentSelect} className="hidden" />
               </div>
             </div>
           </div>
 
-          {/* Actions - full width */}
+          {/* Actions */}
           <div className="flex gap-3 pt-5 mt-2 border-t border-border/20">
             <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl bg-secondary text-secondary-foreground font-medium text-sm hover:bg-secondary/80 transition-colors">
               Cancelar
             </button>
-            <button type="submit" disabled={submitting} className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-50 shadow-md hover:brightness-110 transition-all">
-              {submitting ? "Salvando..." : "Adicionar"}
+            <button type="submit" disabled={submitting} className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-50 shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2">
+              {submitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                "Adicionar"
+              )}
             </button>
           </div>
         </form>

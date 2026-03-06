@@ -263,7 +263,7 @@ const NotasList = () => {
           {paginatedNotas.map((nota) => (
             <div
               key={nota.id}
-              className="glass-card rounded-2xl p-5 group hover:border-border/60 transition-all animate-fade-in"
+              className="glass-card rounded-2xl p-5 group hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 transition-all duration-200 animate-fade-in"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
@@ -308,9 +308,9 @@ const NotasList = () => {
       ) : (
         /* Table View */
         <div className="glass-card rounded-2xl overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-[70vh]">
             <table className="w-full text-xs">
-              <thead>
+              <thead className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm">
                 <tr className="border-b border-border/30">
                   <th className="text-left px-4 py-3 font-semibold text-muted-foreground uppercase tracking-wider">Número</th>
                   <th className="text-left px-4 py-3 font-semibold text-muted-foreground uppercase tracking-wider">Fornecedor</th>
