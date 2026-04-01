@@ -300,7 +300,7 @@ const Dashboard = () => {
               const pct = stats.total > 0 ? (item.valor / stats.total) * 100 : 0;
               return (
                 <div key={item.setor} className="flex items-center gap-3 group">
-                  <div className="w-3 h-3 rounded-full flex-shrink-0 ring-2 ring-offset-2 ring-offset-card" style={{ backgroundColor: item.color, ringColor: item.color }} />
+                  <div className="w-3 h-3 rounded-full flex-shrink-0 ring-2 ring-offset-2 ring-offset-card" style={{ backgroundColor: item.color }} />
                   <span className="text-xs lg:text-sm text-foreground min-w-[90px] lg:min-w-[130px] truncate font-medium">{item.setor}</span>
                   <div className="flex-1 h-2.5 bg-secondary rounded-full overflow-hidden min-w-[40px]">
                     <div
