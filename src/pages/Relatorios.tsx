@@ -199,14 +199,14 @@ const Relatorios = () => {
       {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         {[
-          { label: "Total", value: formatCurrency(stats.total), colorClass: "text-foreground" },
-          { label: "Pago", value: formatCurrency(stats.totalPago), colorClass: "text-success" },
-          { label: "Pendente", value: formatCurrency(stats.totalPendente), colorClass: "text-warning" },
-          { label: "Ticket Médio", value: formatCurrency(stats.ticketMedio), colorClass: "text-primary" },
+          { label: "Total", value: formatCurrency(stats.total), colorClass: "text-foreground", gradient: "from-primary/5 to-transparent" },
+          { label: "Pago", value: formatCurrency(stats.totalPago), colorClass: "text-success", gradient: "from-success/5 to-transparent" },
+          { label: "Pendente", value: formatCurrency(stats.totalPendente), colorClass: "text-warning", gradient: "from-warning/5 to-transparent" },
+          { label: "Ticket Médio", value: formatCurrency(stats.ticketMedio), colorClass: "text-primary", gradient: "from-primary/5 to-transparent" },
         ].map((card) => (
-          <div key={card.label} className="glass-card rounded-2xl p-5 text-center">
+          <div key={card.label} className={`glass-card rounded-2xl p-5 text-center bg-gradient-to-br ${card.gradient} hover-lift`}>
             <p className="text-[10px] lg:text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">{card.label}</p>
-            <p className={`text-lg lg:text-xl font-bold ${card.colorClass}`}>{card.value}</p>
+            <p className={`text-lg lg:text-xl font-bold font-mono ${card.colorClass}`}>{card.value}</p>
           </div>
         ))}
       </div>
