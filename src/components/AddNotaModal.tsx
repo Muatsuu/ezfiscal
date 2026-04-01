@@ -190,10 +190,11 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
     "w-full px-4 py-3 rounded-xl bg-secondary text-foreground text-sm placeholder:text-muted-foreground border-0 outline-none focus:ring-2 focus:ring-primary/30 transition-all [-webkit-appearance:none] [appearance:none]";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-md p-4" onClick={onClose}>
       <div
-        className="bg-card border border-border rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 shadow-2xl animate-scale-in"
+        className="bg-card border border-border/60 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-7 shadow-2xl animate-scale-in"
         onClick={(e) => e.stopPropagation()}
+        style={{ boxShadow: 'var(--shadow-elevated)' }}
       >
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-bold text-foreground">Nova Nota Fiscal</h3>
