@@ -137,8 +137,13 @@ const Relatorios = () => {
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Relatórios</h2>
-          <p className="text-[11px] text-muted-foreground capitalize mt-1 tracking-wide">{periodLabel}</p>
+          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 text-primary" />
+            </div>
+            Relatórios
+          </h2>
+          <p className="text-[11px] text-muted-foreground capitalize mt-1 ml-[52px] tracking-wide">{periodLabel}</p>
         </div>
         <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
           <DialogTrigger asChild>
