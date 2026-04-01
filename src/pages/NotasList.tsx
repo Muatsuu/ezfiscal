@@ -109,9 +109,14 @@ const NotasList = () => {
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 pt-2">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-foreground">Notas Fiscais</h2>
+        <h2 className="text-2xl font-bold text-foreground flex items-center gap-2.5">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+            <FileText className="w-5 h-5 text-primary" />
+          </div>
+          Notas Fiscais
+        </h2>
         <div className="flex gap-2">
           {/* View mode toggle */}
           <div className="flex bg-secondary rounded-xl overflow-hidden">
@@ -263,7 +268,7 @@ const NotasList = () => {
           {paginatedNotas.map((nota) => (
             <div
               key={nota.id}
-              className="glass-card rounded-2xl p-5 group hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 transition-all duration-200 animate-fade-in"
+              className="glass-card rounded-2xl p-5 group hover-lift gradient-border animate-fade-in"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">

@@ -1,6 +1,7 @@
 import { useNotas } from "@/contexts/NFContext";
+import { useAuth } from "@/hooks/useAuth";
 import { useMemo, useState } from "react";
-import { FileText, DollarSign, Clock, CheckCircle, Zap, PlusCircle } from "lucide-react";
+import { FileText, DollarSign, Clock, CheckCircle, Zap, PlusCircle, TrendingUp, TrendingDown, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import AddNotaModal from "@/components/AddNotaModal";
@@ -12,36 +13,40 @@ import {
 import InsightsSection from "@/components/dashboard/InsightsSection";
 
 const SECTOR_COLORS: Record<string, string> = {
-  "Administrativo": "hsl(210, 100%, 60%)",
-  "Manutenção": "hsl(38, 90%, 55%)",
-  "Cozinha": "hsl(158, 55%, 45%)",
-  "GOV.": "hsl(270, 55%, 58%)",
-  "A&B": "hsl(0, 65%, 52%)",
+  "Administrativo": "hsl(215, 100%, 58%)",
+  "Manutenção": "hsl(38, 92%, 56%)",
+  "Cozinha": "hsl(160, 60%, 42%)",
+  "GOV.": "hsl(270, 60%, 60%)",
+  "A&B": "hsl(0, 72%, 55%)",
   "Operações": "hsl(200, 65%, 55%)",
   "Serviços Gerais": "hsl(190, 60%, 50%)",
-  "Não Identificado": "hsl(215, 12%, 45%)",
+  "Não Identificado": "hsl(215, 14%, 45%)",
 };
 
 const Dashboard = () => {
   const { notas, loading } = useNotas();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [showAddModal, setShowAddModal] = useState(false);
 
   const handleAddNota = () => {
-    if (isMobile) {
-      navigate("/adicionar");
-    } else {
-      setShowAddModal(true);
-    }
+    if (isMobile) navigate("/adicionar");
+    else setShowAddModal(true);
   };
+
+  const greeting = useMemo(() => {
+    const h = new Date().getHours();
+    if (h < 12) return "Bom dia";
+    if (h < 18) return "Boa tarde";
+    return "Boa noite";
+  }, []);
+
+  const userName = user?.email?.split("@")[0] || "Usuário";
 
   const today = new Date();
   const dateStr = today.toLocaleDateString("pt-BR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
+    weekday: "long", day: "numeric", month: "long",
   });
 
   const stats = useMemo(() => {
@@ -52,13 +57,28 @@ const Dashboard = () => {
     const totalPago = pagas.reduce((sum, n) => sum + n.valor, 0);
     const totalPendente = pendentes.reduce((sum, n) => sum + n.valor, 0) + vencidas.reduce((sum, n) => sum + n.valor, 0);
 
+    // Month comparison
+    const now = new Date();
+    const thisMonthNotas = notas.filter(n => {
+      const d = new Date(n.dataEmissao);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    });
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthNotas = notas.filter(n => {
+      const d = new Date(n.dataEmissao);
+      return d.getMonth() === lastMonth.getMonth() && d.getFullYear() === lastMonth.getFullYear();
+    });
+    const thisMonthTotal = thisMonthNotas.reduce((s, n) => s + n.valor, 0);
+    const lastMonthTotal = lastMonthNotas.reduce((s, n) => s + n.valor, 0);
+    const changePercent = lastMonthTotal > 0 ? ((thisMonthTotal - lastMonthTotal) / lastMonthTotal) * 100 : 0;
+
     const porSetorMap = notas.reduce((acc, n) => {
       acc[n.setor] = (acc[n.setor] || 0) + n.valor;
       return acc;
     }, {} as Record<string, number>);
     const porSetorData = Object.entries(porSetorMap)
       .sort(([, a], [, b]) => b - a)
-      .map(([setor, valor]) => ({ setor, valor, color: SECTOR_COLORS[setor] || "hsl(210, 100%, 60%)" }));
+      .map(([setor, valor]) => ({ setor, valor, color: SECTOR_COLORS[setor] || "hsl(215, 100%, 58%)" }));
 
     const porMesMap = notas.reduce((acc, n) => {
       const d = new Date(n.dataEmissao);
@@ -68,25 +88,27 @@ const Dashboard = () => {
     }, {} as Record<string, number>);
     const evolucaoMensal = Object.entries(porMesMap)
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([mes, valor]) => {
-        const [y, m] = mes.split("-");
-        const monthNames = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
-        return { mes: monthNames[parseInt(m) - 1], valor };
+      .map(([mes]) => {
+        const [, m] = mes.split("-");
+        const monthNames = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+        return { mes: monthNames[parseInt(m) - 1], valor: porMesMap[mes] };
       });
 
     const sectorPie = porSetorData.map((d) => ({
-      name: d.setor,
-      value: d.valor,
-      color: d.color,
+      name: d.setor, value: d.valor, color: d.color,
     }));
 
-    return { total, totalPago, totalPendente, porSetorData, evolucaoMensal, sectorPie, count: notas.length };
+    return {
+      total, totalPago, totalPendente, porSetorData, evolucaoMensal, sectorPie,
+      count: notas.length, vencidasCount: vencidas.length, changePercent,
+    };
   }, [notas]);
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
   const formatCompact = (value: number) => {
+    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
     if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
     return value.toString();
   };
@@ -94,7 +116,7 @@ const Dashboard = () => {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload?.length) {
       return (
-        <div className="bg-card border border-border rounded-xl p-3 shadow-2xl text-xs">
+        <div className="glass-card-elevated rounded-xl p-3 text-xs border border-border/60">
           <p className="font-medium text-muted-foreground mb-1">{label}</p>
           <p className="text-primary font-bold text-sm">{formatCurrency(payload[0].value)}</p>
         </div>
@@ -103,34 +125,73 @@ const Dashboard = () => {
     return null;
   };
 
-  if (loading) {
-    return <DashboardSkeleton />;
-  }
+  if (loading) return <DashboardSkeleton />;
+
+  const kpiCards = [
+    {
+      icon: FileText, label: "Total de NFs", value: String(stats.count),
+      colorClass: "text-primary", bgClass: "bg-primary/8",
+      gradient: "from-primary/10 to-primary-glow/5",
+    },
+    {
+      icon: DollarSign, label: "Total Geral", value: formatCurrency(stats.total),
+      colorClass: "text-accent", bgClass: "bg-accent/8",
+      gradient: "from-accent/10 to-accent/5",
+    },
+    {
+      icon: Clock, label: "A Pagar", value: formatCurrency(stats.totalPendente),
+      colorClass: "text-warning", bgClass: "bg-warning/8",
+      gradient: "from-warning/10 to-warning/5",
+      badge: stats.vencidasCount > 0 ? `${stats.vencidasCount} vencida${stats.vencidasCount > 1 ? "s" : ""}` : undefined,
+    },
+    {
+      icon: CheckCircle, label: "Pago", value: formatCurrency(stats.totalPago),
+      colorClass: "text-success", bgClass: "bg-success/8",
+      gradient: "from-success/10 to-success/5",
+    },
+  ];
 
   return (
     <div className="space-y-6 pt-2 overflow-x-hidden">
-      {/* Header */}
-      <div>
-        <p className="text-[11px] text-muted-foreground capitalize tracking-wide">{dateStr}</p>
-        <h2 className="text-2xl font-bold text-foreground mt-1">Dashboard</h2>
+      {/* Header with greeting */}
+      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3">
+        <div>
+          <p className="text-[11px] text-muted-foreground capitalize tracking-wide">{dateStr}</p>
+          <h2 className="text-2xl lg:text-3xl font-bold text-foreground mt-1">
+            {greeting}, <span className="gradient-text">{userName}</span>
+          </h2>
+        </div>
+        {stats.changePercent !== 0 && (
+          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold self-start ${
+            stats.changePercent > 0 ? "bg-destructive/10 text-destructive" : "bg-success/10 text-success"
+          }`}>
+            {stats.changePercent > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+            {Math.abs(stats.changePercent).toFixed(0)}% vs mês anterior
+          </div>
+        )}
       </div>
 
-      {/* Stat Cards */}
+      {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-        {[
-          { icon: FileText, label: "Total de NFs", value: String(stats.count), colorClass: "text-primary", bgClass: "bg-primary/8" },
-          { icon: DollarSign, label: "Total Geral", value: formatCurrency(stats.total), colorClass: "text-accent", bgClass: "bg-accent/8" },
-          { icon: Clock, label: "A Pagar", value: formatCurrency(stats.totalPendente), colorClass: "text-warning", bgClass: "bg-warning/8" },
-          { icon: CheckCircle, label: "Pago", value: formatCurrency(stats.totalPago), colorClass: "text-success", bgClass: "bg-success/8" },
-        ].map((card) => (
-          <div key={card.label} className="glass-card rounded-2xl p-5 lg:p-6 group hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 hover-scale transition-all duration-200">
-            <div className="flex items-center gap-2 mb-4">
-              <div className={`w-8 h-8 rounded-lg ${card.bgClass} flex items-center justify-center`}>
+        {kpiCards.map((card) => (
+          <div
+            key={card.label}
+            className={`glass-card rounded-2xl p-5 lg:p-6 group hover-lift gradient-border bg-gradient-to-br ${card.gradient}`}
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <div className={`w-9 h-9 rounded-xl ${card.bgClass} flex items-center justify-center`}>
                 <card.icon className={`w-4 h-4 ${card.colorClass}`} />
               </div>
               <span className="text-[10px] lg:text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{card.label}</span>
             </div>
-            <p className={`text-xl lg:text-2xl font-bold ${card.label === "Total de NFs" ? "text-foreground" : card.colorClass}`}>{card.value}</p>
+            <p className={`text-xl lg:text-2xl font-bold tracking-tight ${card.label === "Total de NFs" ? "text-foreground" : card.colorClass}`}>
+              {card.value}
+            </p>
+            {card.badge && (
+              <span className="inline-block mt-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-destructive/10 text-destructive">
+                {card.badge}
+              </span>
+            )}
           </div>
         ))}
       </div>
@@ -144,47 +205,35 @@ const Dashboard = () => {
             Tendência de Gastos
           </h3>
           {stats.evolucaoMensal.length > 0 ? (
-            <ResponsiveContainer width="100%" height={260}>
+            <ResponsiveContainer width="100%" height={280}>
               <AreaChart data={stats.evolucaoMensal} margin={{ left: 0, right: 10, top: 5, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorValor" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(210, 100%, 60%)" stopOpacity={0.25} />
-                    <stop offset="100%" stopColor="hsl(210, 100%, 60%)" stopOpacity={0} />
+                    <stop offset="0%" stopColor="hsl(215, 100%, 58%)" stopOpacity={0.3} />
+                    <stop offset="50%" stopColor="hsl(215, 100%, 58%)" stopOpacity={0.1} />
+                    <stop offset="100%" stopColor="hsl(215, 100%, 58%)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 14%, 14%)" vertical={false} />
-                <XAxis
-                  dataKey="mes"
-                  tick={{ fontSize: 11, fill: "hsl(215, 12%, 45%)" }}
-                  axisLine={false}
-                  tickLine={false}
-                />
-                <YAxis
-                  tick={{ fontSize: 10, fill: "hsl(215, 12%, 45%)" }}
-                  axisLine={false}
-                  tickLine={false}
-                  tickFormatter={formatCompact}
-                  width={40}
-                />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(225, 14%, 12%)" vertical={false} />
+                <XAxis dataKey="mes" tick={{ fontSize: 11, fill: "hsl(215, 14%, 50%)" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: "hsl(215, 14%, 50%)" }} axisLine={false} tickLine={false} tickFormatter={formatCompact} width={45} />
                 <Tooltip content={<CustomTooltip />} />
                 <Area
-                  type="monotone"
-                  dataKey="valor"
-                  stroke="hsl(210, 100%, 60%)"
-                  strokeWidth={2.5}
+                  type="monotone" dataKey="valor"
+                  stroke="hsl(215, 100%, 58%)" strokeWidth={2.5}
                   fill="url(#colorValor)"
-                  dot={{ r: 4, fill: "hsl(210, 100%, 60%)", strokeWidth: 0 }}
-                  activeDot={{ r: 6, fill: "hsl(210, 100%, 60%)", stroke: "hsl(220, 22%, 9%)", strokeWidth: 3 }}
+                  dot={{ r: 4, fill: "hsl(215, 100%, 58%)", strokeWidth: 0 }}
+                  activeDot={{ r: 6, fill: "hsl(215, 100%, 58%)", stroke: "hsl(225, 25%, 4%)", strokeWidth: 3 }}
                 />
               </AreaChart>
             </ResponsiveContainer>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 gap-3">
-              <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center">
-                <Zap className="w-6 h-6 text-muted-foreground/40" />
+              <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center">
+                <Zap className="w-7 h-7 text-muted-foreground/30" />
               </div>
-              <p className="text-sm text-muted-foreground">Sem dados suficientes</p>
-              <button onClick={handleAddNota} className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
+              <p className="text-sm text-muted-foreground font-medium">Sem dados suficientes</p>
+              <button onClick={handleAddNota} className="text-xs text-primary font-semibold hover:underline flex items-center gap-1">
                 <PlusCircle className="w-3.5 h-3.5" /> Cadastrar primeira nota
               </button>
             </div>
@@ -196,37 +245,45 @@ const Dashboard = () => {
           <h3 className="text-sm font-semibold text-foreground mb-5">Distribuição por Setor</h3>
           {stats.sectorPie.length > 0 ? (
             <div className="flex flex-col items-center">
-              <ResponsiveContainer width="100%" height={190}>
+              <ResponsiveContainer width="100%" height={200}>
                 <PieChart>
                   <Pie
-                    data={stats.sectorPie}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={55}
-                    outerRadius={85}
-                    paddingAngle={3}
-                    dataKey="value"
-                    stroke="none"
+                    data={stats.sectorPie} cx="50%" cy="50%"
+                    innerRadius={58} outerRadius={88} paddingAngle={3}
+                    dataKey="value" stroke="none"
                   >
                     {stats.sectorPie.map((entry, index) => (
                       <Cell key={index} fill={entry.color} />
                     ))}
                   </Pie>
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload?.length) {
+                        return (
+                          <div className="glass-card-elevated rounded-xl p-3 text-xs border border-border/60">
+                            <p className="font-medium text-foreground">{payload[0].name}</p>
+                            <p className="text-primary font-bold">{formatCurrency(payload[0].value as number)}</p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
               <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3 justify-center">
                 {stats.sectorPie.map((d) => (
                   <div key={d.name} className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: d.color }} />
-                    <span className="text-[11px] text-muted-foreground">{d.name}</span>
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: d.color }} />
+                    <span className="text-[11px] text-muted-foreground font-medium">{d.name}</span>
                   </div>
                 ))}
               </div>
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 gap-3">
-              <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-muted-foreground/40" />
+              <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center">
+                <DollarSign className="w-7 h-7 text-muted-foreground/30" />
               </div>
               <p className="text-sm text-muted-foreground">Sem dados</p>
             </div>
@@ -242,20 +299,20 @@ const Dashboard = () => {
             {stats.porSetorData.map((item) => {
               const pct = stats.total > 0 ? (item.valor / stats.total) * 100 : 0;
               return (
-                <div key={item.setor} className="flex items-center gap-3">
-                  <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
-                  <span className="text-xs lg:text-sm text-foreground min-w-[90px] lg:min-w-[130px] truncate">{item.setor}</span>
+                <div key={item.setor} className="flex items-center gap-3 group">
+                  <div className="w-3 h-3 rounded-full flex-shrink-0 ring-2 ring-offset-2 ring-offset-card" style={{ backgroundColor: item.color }} />
+                  <span className="text-xs lg:text-sm text-foreground min-w-[90px] lg:min-w-[130px] truncate font-medium">{item.setor}</span>
                   <div className="flex-1 h-2.5 bg-secondary rounded-full overflow-hidden min-w-[40px]">
                     <div
-                      className="h-full rounded-full transition-all duration-700 ease-out"
+                      className="h-full rounded-full transition-all duration-1000 ease-out"
                       style={{
                         width: `${pct}%`,
-                        background: `linear-gradient(90deg, ${item.color}, ${item.color}dd)`,
+                        background: `linear-gradient(90deg, ${item.color}, ${item.color}cc)`,
                       }}
                     />
                   </div>
-                  <span className="text-xs lg:text-sm font-semibold text-foreground min-w-[80px] lg:min-w-[110px] text-right">{formatCurrency(item.valor)}</span>
-                  <span className="text-[11px] text-muted-foreground w-10 text-right">{pct.toFixed(0)}%</span>
+                  <span className="text-xs lg:text-sm font-bold text-foreground min-w-[80px] lg:min-w-[110px] text-right font-mono">{formatCurrency(item.valor)}</span>
+                  <span className="text-[11px] text-muted-foreground w-10 text-right font-mono">{pct.toFixed(0)}%</span>
                 </div>
               );
             })}
@@ -274,27 +331,37 @@ const Dashboard = () => {
           <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">Notas Recentes</h3>
           <button
             onClick={() => navigate("/notas")}
-            className="text-xs text-primary font-medium hover:underline flex items-center gap-1"
+            className="text-xs text-primary font-semibold hover:underline flex items-center gap-1 group"
           >
-            Ver todas →
+            Ver todas <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
           </button>
         </div>
         <div className="space-y-1">
-          {notas.slice(0, 5).map((nota) => (
+          {notas.slice(0, 5).map((nota, i) => (
             <div
               key={nota.id}
-              className="flex items-center justify-between py-3 border-b border-border/20 last:border-0 hover:bg-muted/30 -mx-2 px-2 rounded-xl transition-colors"
+              className="flex items-center justify-between py-3.5 border-b border-border/20 last:border-0 hover:bg-muted/30 -mx-3 px-3 rounded-xl transition-all duration-200 cursor-pointer group"
+              style={{ animationDelay: `${i * 50}ms` }}
             >
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">{nota.fornecedor}</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">
-                  {nota.numero} · {nota.setor}
-                </p>
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                  nota.status === "paga" ? "bg-success/10" : nota.status === "vencida" ? "bg-destructive/10" : "bg-warning/10"
+                }`}>
+                  <FileText className={`w-4 h-4 ${
+                    nota.status === "paga" ? "text-success" : nota.status === "vencida" ? "text-destructive" : "text-warning"
+                  }`} />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground truncate">{nota.fornecedor}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {nota.numero} · {nota.setor}
+                  </p>
+                </div>
               </div>
               <div className="text-right ml-3">
-                <p className="text-sm font-bold text-foreground">{formatCurrency(nota.valor)}</p>
+                <p className="text-sm font-bold text-foreground font-mono">{formatCurrency(nota.valor)}</p>
                 <span
-                  className={`text-[10px] font-medium px-2 py-0.5 rounded-full inline-block mt-0.5 ${
+                  className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full inline-block mt-0.5 ${
                     nota.status === "paga"
                       ? "bg-success/10 text-success"
                       : nota.status === "vencida"
@@ -308,12 +375,15 @@ const Dashboard = () => {
             </div>
           ))}
           {notas.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-10 gap-3">
-              <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center">
-                <FileText className="w-6 h-6 text-muted-foreground/40" />
+            <div className="flex flex-col items-center justify-center py-12 gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center">
+                <FileText className="w-7 h-7 text-muted-foreground/30" />
               </div>
-              <p className="text-sm text-muted-foreground">Nenhuma nota cadastrada</p>
-              <button onClick={handleAddNota} className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
+              <div className="text-center">
+                <p className="text-sm font-medium text-foreground">Nenhuma nota cadastrada</p>
+                <p className="text-xs text-muted-foreground mt-1">Comece adicionando sua primeira nota fiscal</p>
+              </div>
+              <button onClick={handleAddNota} className="text-xs text-primary font-semibold hover:underline flex items-center gap-1">
                 <PlusCircle className="w-3.5 h-3.5" /> Cadastrar primeira nota
               </button>
             </div>

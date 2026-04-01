@@ -1,36 +1,64 @@
-import { ReactNode } from "react";
+import { ReactNode, useMemo } from "react";
 import BottomNav from "./BottomNav";
 import AppSidebar from "./AppSidebar";
 import EmpresaSelector from "./EmpresaSelector";
-import { Moon, Sun, LogOut, Shield } from "lucide-react";
+import { Moon, Sun, LogOut, Shield, BellRing } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useEmpresa } from "@/contexts/EmpresaContext";
+import { useNotas } from "@/contexts/NFContext";
 import { useNavigate } from "react-router-dom";
 
 const AppLayout = ({ children }: { children: ReactNode }) => {
   const { theme, toggleTheme } = useTheme();
   const { signOut } = useAuth();
   const { isAdmin } = useEmpresa();
+  const { notas } = useNotas();
   const navigate = useNavigate();
+
+  const alertCount = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const threeDays = new Date(today);
+    threeDays.setDate(today.getDate() + 3);
+    return notas.filter((n) => {
+      if (n.status === "vencida") return true;
+      if (n.status === "pendente") {
+        const v = new Date(n.dataVencimento);
+        return v >= today && v <= threeDays;
+      }
+      return false;
+    }).length;
+  }, [notas]);
 
   return (
     <div className="min-h-screen bg-background flex overflow-x-hidden max-w-[100vw]">
       <AppSidebar />
       
-      <div className="flex-1 flex flex-col min-h-screen lg:ml-[240px] overflow-x-hidden max-w-[100vw] lg:max-w-[calc(100vw-240px)]">
+      <div className="flex-1 flex flex-col min-h-screen lg:ml-[260px] overflow-x-hidden max-w-[100vw] lg:max-w-[calc(100vw-260px)]">
         {/* Mobile header */}
-        <header className="lg:hidden sticky top-0 z-40 bg-background/90 backdrop-blur-md border-b border-border w-full" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.5rem)' }}>
+        <header className="lg:hidden sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50 w-full" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.25rem)' }}>
           <div className="flex items-center justify-between px-4 py-3">
             <div>
-              <h1 className="text-lg font-bold text-foreground tracking-tight">NF Manager</h1>
-              <p className="text-xs text-muted-foreground">Gestão de Notas Fiscais</p>
+              <h1 className="text-lg font-bold text-foreground tracking-tight">EZ Fiscal</h1>
+              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-[0.12em]">Gestão Inteligente</p>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => navigate("/alertas")}
+                className="relative p-2.5 rounded-xl bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <BellRing className="w-4 h-4" />
+                {alertCount > 0 && (
+                  <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[8px] flex items-center justify-center font-bold ring-2 ring-background animate-pulse-soft">
+                    {alertCount > 9 ? "9+" : alertCount}
+                  </span>
+                )}
+              </button>
               {isAdmin && (
                 <button
                   onClick={() => navigate("/admin")}
-                  className="p-2 rounded-full bg-secondary text-secondary-foreground hover:bg-primary/10 hover:text-primary transition-colors"
+                  className="p-2.5 rounded-xl bg-secondary/80 text-muted-foreground hover:text-primary transition-colors"
                   title="Administração"
                 >
                   <Shield className="w-4 h-4" />
@@ -38,20 +66,19 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
               )}
               <button
                 onClick={toggleTheme}
-                className="p-2 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
+                className="p-2.5 rounded-xl bg-secondary/80 text-muted-foreground hover:text-foreground transition-colors"
               >
                 {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </button>
               <button
                 onClick={signOut}
-                className="p-2 rounded-full bg-secondary text-secondary-foreground hover:bg-destructive/20 hover:text-destructive transition-colors"
+                className="p-2.5 rounded-xl bg-secondary/80 text-muted-foreground hover:text-destructive transition-colors"
                 title="Sair"
               >
                 <LogOut className="w-4 h-4" />
               </button>
             </div>
           </div>
-          {/* Mobile Empresa Selector */}
           <div className="px-4 pb-3">
             <EmpresaSelector />
           </div>

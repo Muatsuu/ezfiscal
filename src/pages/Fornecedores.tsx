@@ -136,12 +136,17 @@ const Fornecedores = () => {
     <div className="space-y-5 pt-2 overflow-x-hidden">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Fornecedores</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">{fornecedores.length} cadastrados</p>
+          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Building2 className="w-5 h-5 text-primary" />
+            </div>
+            Fornecedores
+          </h2>
+          <p className="text-xs text-muted-foreground mt-0.5 ml-[52px]">{fornecedores.length} cadastrados</p>
         </div>
         <button
           onClick={() => { resetForm(); setShowForm(true); }}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:brightness-110 transition-all hover-scale"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-primary to-primary-glow text-primary-foreground text-xs font-semibold shadow-lg glow-primary hover:shadow-xl hover:brightness-110 transition-all duration-300 active:scale-[0.98]"
         >
           <Plus className="w-4 h-4" />
           Novo
@@ -209,7 +214,7 @@ const Fornecedores = () => {
             return (
               <div
                 key={f.id}
-                className="glass-card rounded-2xl p-5 group hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 transition-all duration-200 animate-fade-in"
+                className="glass-card rounded-2xl p-5 group hover-lift gradient-border animate-fade-in"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">

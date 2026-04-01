@@ -137,8 +137,13 @@ const Relatorios = () => {
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Relatórios</h2>
-          <p className="text-[11px] text-muted-foreground capitalize mt-1 tracking-wide">{periodLabel}</p>
+          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 text-primary" />
+            </div>
+            Relatórios
+          </h2>
+          <p className="text-[11px] text-muted-foreground capitalize mt-1 ml-[52px] tracking-wide">{periodLabel}</p>
         </div>
         <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
           <DialogTrigger asChild>
@@ -194,14 +199,14 @@ const Relatorios = () => {
       {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         {[
-          { label: "Total", value: formatCurrency(stats.total), colorClass: "text-foreground" },
-          { label: "Pago", value: formatCurrency(stats.totalPago), colorClass: "text-success" },
-          { label: "Pendente", value: formatCurrency(stats.totalPendente), colorClass: "text-warning" },
-          { label: "Ticket Médio", value: formatCurrency(stats.ticketMedio), colorClass: "text-primary" },
+          { label: "Total", value: formatCurrency(stats.total), colorClass: "text-foreground", gradient: "from-primary/5 to-transparent" },
+          { label: "Pago", value: formatCurrency(stats.totalPago), colorClass: "text-success", gradient: "from-success/5 to-transparent" },
+          { label: "Pendente", value: formatCurrency(stats.totalPendente), colorClass: "text-warning", gradient: "from-warning/5 to-transparent" },
+          { label: "Ticket Médio", value: formatCurrency(stats.ticketMedio), colorClass: "text-primary", gradient: "from-primary/5 to-transparent" },
         ].map((card) => (
-          <div key={card.label} className="glass-card rounded-2xl p-5 text-center">
+          <div key={card.label} className={`glass-card rounded-2xl p-5 text-center bg-gradient-to-br ${card.gradient} hover-lift`}>
             <p className="text-[10px] lg:text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">{card.label}</p>
-            <p className={`text-lg lg:text-xl font-bold ${card.colorClass}`}>{card.value}</p>
+            <p className={`text-lg lg:text-xl font-bold font-mono ${card.colorClass}`}>{card.value}</p>
           </div>
         ))}
       </div>

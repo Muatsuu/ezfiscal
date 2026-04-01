@@ -190,10 +190,11 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
     "w-full px-4 py-3 rounded-xl bg-secondary text-foreground text-sm placeholder:text-muted-foreground border-0 outline-none focus:ring-2 focus:ring-primary/30 transition-all [-webkit-appearance:none] [appearance:none]";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-md p-4" onClick={onClose}>
       <div
-        className="bg-card border border-border rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 shadow-2xl animate-scale-in"
+        className="bg-card border border-border/60 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-7 shadow-2xl animate-scale-in"
         onClick={(e) => e.stopPropagation()}
+        style={{ boxShadow: 'var(--shadow-elevated)' }}
       >
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-bold text-foreground">Nova Nota Fiscal</h3>
@@ -341,7 +342,7 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
             <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl bg-secondary text-secondary-foreground font-medium text-sm hover:bg-secondary/80 transition-colors">
               Cancelar
             </button>
-            <button type="submit" disabled={submitting} className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-50 shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2">
+            <button type="submit" disabled={submitting} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-primary to-primary-glow text-primary-foreground font-semibold text-sm disabled:opacity-50 shadow-lg glow-primary hover:shadow-xl hover:brightness-110 transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.98]">
               {submitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
