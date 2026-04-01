@@ -136,8 +136,13 @@ const Fornecedores = () => {
     <div className="space-y-5 pt-2 overflow-x-hidden">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Fornecedores</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">{fornecedores.length} cadastrados</p>
+          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Building2 className="w-5 h-5 text-primary" />
+            </div>
+            Fornecedores
+          </h2>
+          <p className="text-xs text-muted-foreground mt-0.5 ml-[52px]">{fornecedores.length} cadastrados</p>
         </div>
         <button
           onClick={() => { resetForm(); setShowForm(true); }}
