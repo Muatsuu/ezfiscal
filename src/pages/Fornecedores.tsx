@@ -146,7 +146,7 @@ const Fornecedores = () => {
         </div>
         <button
           onClick={() => { resetForm(); setShowForm(true); }}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:brightness-110 transition-all hover-scale"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-primary to-primary-glow text-primary-foreground text-xs font-semibold shadow-lg glow-primary hover:shadow-xl hover:brightness-110 transition-all duration-300 active:scale-[0.98]"
         >
           <Plus className="w-4 h-4" />
           Novo
