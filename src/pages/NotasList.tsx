@@ -268,7 +268,7 @@ const NotasList = () => {
           {paginatedNotas.map((nota) => (
             <div
               key={nota.id}
-              className="glass-card rounded-2xl p-5 group hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 transition-all duration-200 animate-fade-in"
+              className="glass-card rounded-2xl p-5 group hover-lift gradient-border animate-fade-in"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
