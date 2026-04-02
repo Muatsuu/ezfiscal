@@ -317,10 +317,10 @@ const Admin = () => {
                       </span>
                     </div>
                   </div>
-                  {(e.endereco || e.telefone) && (
+                  {((e as any).endereco || (e as any).telefone) && (
                     <div className="mt-3 pt-3 border-t border-border/20 flex flex-wrap gap-4 ml-[52px] text-[11px] text-muted-foreground">
-                      {e.endereco && <span>{e.endereco}</span>}
-                      {e.telefone && <span>{e.telefone}</span>}
+                      {(e as any).endereco && <span>{(e as any).endereco}</span>}
+                      {(e as any).telefone && <span>{(e as any).telefone}</span>}
                     </div>
                   )}
                 </div>
