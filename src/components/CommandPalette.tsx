@@ -145,8 +145,8 @@ const CommandPalette = () => {
                       <Icon className="w-4 h-4 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <span className="text-sm font-medium truncate block">{item.label}</span>
-                        {"subtitle" in item && item.subtitle && (
-                          <span className="text-[11px] text-muted-foreground">{item.subtitle}</span>
+{"subtitle" in item && (item as any).subtitle && (
+                          <span className="text-[11px] text-muted-foreground">{(item as any).subtitle}</span>
                         )}
                       </div>
                       {idx === selectedIndex && <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />}
