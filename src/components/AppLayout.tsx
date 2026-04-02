@@ -1,8 +1,10 @@
 import { ReactNode, useMemo } from "react";
 import BottomNav from "./BottomNav";
 import AppSidebar from "./AppSidebar";
+import TopBar from "./TopBar";
+import CommandPalette from "./CommandPalette";
 import EmpresaSelector from "./EmpresaSelector";
-import { Moon, Sun, LogOut, Shield, BellRing } from "lucide-react";
+import { Moon, Sun, LogOut, Shield, BellRing, Command } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useEmpresa } from "@/contexts/EmpresaContext";
@@ -34,6 +36,7 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
   return (
     <div className="min-h-screen bg-background flex overflow-x-hidden max-w-[100vw]">
       <AppSidebar />
+      <CommandPalette />
       
       <div className="flex-1 flex flex-col min-h-screen lg:ml-[260px] overflow-x-hidden max-w-[100vw] lg:max-w-[calc(100vw-260px)]">
         {/* Mobile header */}
@@ -85,8 +88,11 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
         </header>
 
         {/* Main content */}
-        <main className="flex-1 px-4 lg:px-8 lg:py-6 pb-24 lg:pb-8 animate-fade-in max-w-7xl w-full mx-auto overflow-x-hidden">
-          {children}
+        <main className="flex-1 px-4 lg:px-8 lg:py-4 pb-24 lg:pb-8 max-w-7xl w-full mx-auto overflow-x-hidden">
+          <TopBar />
+          <div className="animate-fade-in">
+            {children}
+          </div>
         </main>
       </div>
 

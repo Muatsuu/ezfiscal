@@ -1,7 +1,11 @@
 import { useNotas } from "@/contexts/NFContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useMemo, useState } from "react";
-import { FileText, DollarSign, Clock, CheckCircle, Zap, PlusCircle, TrendingUp, TrendingDown, ArrowRight } from "lucide-react";
+import {
+  FileText, DollarSign, Clock, CheckCircle, Zap, PlusCircle,
+  TrendingUp, TrendingDown, ArrowRight, Building2, CalendarDays,
+  BarChart3, BellRing, ArrowUpRight,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import AddNotaModal from "@/components/AddNotaModal";
@@ -151,6 +155,14 @@ const Dashboard = () => {
     },
   ];
 
+  const quickLinks = [
+    { label: "Nova NF", icon: PlusCircle, action: handleAddNota, color: "text-primary bg-primary/8" },
+    { label: "Fornecedores", icon: Building2, action: () => navigate("/fornecedores"), color: "text-accent bg-accent/8" },
+    { label: "Calendário", icon: CalendarDays, action: () => navigate("/calendario"), color: "text-success bg-success/8" },
+    { label: "Relatórios", icon: BarChart3, action: () => navigate("/relatorios"), color: "text-warning bg-warning/8" },
+    { label: "Alertas", icon: BellRing, action: () => navigate("/alertas"), color: "text-destructive bg-destructive/8" },
+  ];
+
   return (
     <div className="space-y-6 pt-2 overflow-x-hidden">
       {/* Header with greeting */}
@@ -161,14 +173,33 @@ const Dashboard = () => {
             {greeting}, <span className="gradient-text">{userName}</span>
           </h2>
         </div>
-        {stats.changePercent !== 0 && (
-          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold self-start ${
-            stats.changePercent > 0 ? "bg-destructive/10 text-destructive" : "bg-success/10 text-success"
-          }`}>
-            {stats.changePercent > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
-            {Math.abs(stats.changePercent).toFixed(0)}% vs mês anterior
-          </div>
-        )}
+        <div className="flex items-center gap-2 self-start">
+          {stats.changePercent !== 0 && (
+            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${
+              stats.changePercent > 0 ? "bg-destructive/10 text-destructive" : "bg-success/10 text-success"
+            }`}>
+              {stats.changePercent > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+              {Math.abs(stats.changePercent).toFixed(0)}% vs mês anterior
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+        {quickLinks.map((link) => (
+          <button
+            key={link.label}
+            onClick={link.action}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-secondary/80 hover:bg-secondary text-foreground text-xs font-medium whitespace-nowrap transition-all hover-scale group"
+          >
+            <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${link.color}`}>
+              <link.icon className="w-3.5 h-3.5" />
+            </div>
+            {link.label}
+            <ArrowUpRight className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
+        ))}
       </div>
 
       {/* KPI Cards */}
