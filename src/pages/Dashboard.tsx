@@ -1,7 +1,11 @@
 import { useNotas } from "@/contexts/NFContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useMemo, useState } from "react";
-import { FileText, DollarSign, Clock, CheckCircle, Zap, PlusCircle, TrendingUp, TrendingDown, ArrowRight } from "lucide-react";
+import {
+  FileText, DollarSign, Clock, CheckCircle, Zap, PlusCircle,
+  TrendingUp, TrendingDown, ArrowRight, Building2, CalendarDays,
+  BarChart3, BellRing, ArrowUpRight,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import AddNotaModal from "@/components/AddNotaModal";
