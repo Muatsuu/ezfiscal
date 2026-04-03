@@ -354,6 +354,9 @@ const Dashboard = () => {
         )}
       </div>
 
+      {/* Cash Flow Projection */}
+      <CashFlowChart notas={notas} />
+
       {/* Insights */}
       <InsightsSection notas={notas} />
 
