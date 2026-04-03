@@ -230,10 +230,16 @@ const Relatorios = () => {
                   </label>
                 ))}
               </div>
-              <button onClick={exportCSV} disabled={selectedColumns.length === 0}
-                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-50">
-                Exportar ({selectedColumns.length} colunas)
-              </button>
+              <div className="flex gap-2">
+                <button onClick={exportCSV} disabled={selectedColumns.length === 0}
+                  className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-50">
+                  CSV
+                </button>
+                <button onClick={exportExcel} disabled={selectedColumns.length === 0}
+                  className="flex-1 py-3 rounded-xl bg-success text-success-foreground font-semibold text-sm disabled:opacity-50">
+                  Excel
+                </button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
