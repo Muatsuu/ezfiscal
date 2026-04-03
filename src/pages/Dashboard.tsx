@@ -15,6 +15,7 @@ import {
   PieChart, Pie, Cell, CartesianGrid,
 } from "recharts";
 import InsightsSection from "@/components/dashboard/InsightsSection";
+import CashFlowChart from "@/components/CashFlowChart";
 
 const SECTOR_COLORS: Record<string, string> = {
   "Administrativo": "hsl(215, 100%, 58%)",
@@ -352,6 +353,9 @@ const Dashboard = () => {
           <p className="text-xs text-muted-foreground text-center py-8">Sem dados</p>
         )}
       </div>
+
+      {/* Cash Flow Projection */}
+      <CashFlowChart notas={notas} />
 
       {/* Insights */}
       <InsightsSection notas={notas} />

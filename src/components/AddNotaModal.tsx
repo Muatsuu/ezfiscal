@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { SETORES } from "@/types/notaFiscal";
-import { X, Sparkles, Upload, Loader2, Paperclip, FileCheck } from "lucide-react";
+import { X, Sparkles, Upload, Loader2, Paperclip, FileCheck, Repeat } from "lucide-react";
 import { toast } from "sonner";
 import { useNotas } from "@/contexts/NFContext";
 import { useAuditLog } from "@/hooks/useAuditLog";
 import { supabase } from "@/integrations/supabase/client";
 import FornecedorCombobox from "@/components/FornecedorCombobox";
+import DuplicateWarning from "@/components/DuplicateWarning";
 
 const KEYWORDS_SETOR: Record<string, string[]> = {
   Administrativo: ["escritório", "material", "papelaria", "expediente", "administrativo", "recepção", "secretaria"],
@@ -48,6 +49,9 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
   const [submitting, setSubmitting] = useState(false);
   const [parsing, setParsing] = useState(false);
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const [isRecorrente, setIsRecorrente] = useState(false);
+  const [diaVencimento, setDiaVencimento] = useState(1);
+  const { notas } = useNotas();
 
   const handleDescricaoChange = (value: string) => {
     const s = sugerirSetor(value);
@@ -179,6 +183,14 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
       if (attachmentFile) {
         await uploadAttachment(notaId, attachmentFile);
       }
+      if (isRecorrente) {
+        await supabase.from("notas_recorrentes").insert({
+          nota_base_id: notaId,
+          user_id: (await supabase.auth.getUser()).data.user?.id || "",
+          dia_vencimento: diaVencimento,
+          ativa: true,
+        });
+      }
     }
 
     setSubmitting(false);
@@ -242,8 +254,11 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
             ))}
           </div>
 
+          {/* Duplicate Warning */}
+          <DuplicateWarning numero={form.numero} fornecedor={form.fornecedor} notas={notas} />
+
           {/* Two-column layout */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-3 mt-3">
             {/* Left Column */}
             <div className="space-y-3">
               <div>
@@ -335,6 +350,28 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
                 <input id="modal-attachment-input" type="file" accept=".pdf,.xml,.jpg,.jpeg,.png" onChange={onAttachmentSelect} className="hidden" />
               </div>
             </div>
+          </div>
+
+          {/* Recurrence Toggle */}
+          <div className="mt-4 px-4 py-3 rounded-xl bg-secondary/60 space-y-2">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <div className={`w-9 h-5 rounded-full transition-colors relative ${isRecorrente ? "bg-primary" : "bg-muted"}`}
+                onClick={() => setIsRecorrente(!isRecorrente)}>
+                <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${isRecorrente ? "translate-x-4" : "translate-x-0.5"}`} />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Repeat className="w-3.5 h-3.5 text-primary" />
+                <span className="text-xs font-medium text-foreground">Nota recorrente (mensal)</span>
+              </div>
+            </label>
+            {isRecorrente && (
+              <div className="flex items-center gap-2 animate-fade-in">
+                <span className="text-[11px] text-muted-foreground">Dia do vencimento:</span>
+                <input type="number" min={1} max={28} value={diaVencimento}
+                  onChange={(e) => setDiaVencimento(Math.min(28, Math.max(1, parseInt(e.target.value) || 1)))}
+                  className="w-16 px-2 py-1.5 rounded-lg bg-secondary text-foreground text-xs border-0 outline-none focus:ring-2 focus:ring-primary/30" />
+              </div>
+            )}
           </div>
 
           {/* Actions */}

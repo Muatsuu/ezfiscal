@@ -4,6 +4,8 @@ import { X, Sparkles, Paperclip, FileCheck, Download, Loader2 } from "lucide-rea
 import { toast } from "sonner";
 import { useNotas } from "@/contexts/NFContext";
 import FornecedorCombobox from "@/components/FornecedorCombobox";
+import DuplicateWarning from "@/components/DuplicateWarning";
+import NotaComments from "@/components/NotaComments";
 
 const KEYWORDS_SETOR: Record<string, string[]> = {
   Administrativo: ["escritório", "material", "papelaria", "expediente", "administrativo", "recepção", "secretaria"],
@@ -28,7 +30,7 @@ interface EditNotaModalProps {
 }
 
 const EditNotaModal = ({ nota, onClose }: EditNotaModalProps) => {
-  const { updateNota, uploadAttachment, getAttachmentUrl } = useNotas();
+  const { updateNota, uploadAttachment, getAttachmentUrl, notas } = useNotas();
   const [form, setForm] = useState({
     numero: nota.numero,
     tipo: nota.tipo,
@@ -110,7 +112,7 @@ const EditNotaModal = ({ nota, onClose }: EditNotaModalProps) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-md p-4" onClick={onClose}>
       <div
-        className="bg-card border border-border/60 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-7 shadow-2xl animate-scale-in"
+        className="bg-card border border-border/60 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-7 shadow-2xl animate-scale-in"
         onClick={(e) => e.stopPropagation()}
         style={{ boxShadow: 'var(--shadow-elevated)' }}
       >
@@ -141,6 +143,9 @@ const EditNotaModal = ({ nota, onClose }: EditNotaModalProps) => {
           </div>
 
           <input placeholder="Número da NF *" value={form.numero} onChange={(e) => setForm((f) => ({ ...f, numero: e.target.value }))} className={inputClass} />
+
+          {/* Duplicate Warning */}
+          <DuplicateWarning numero={form.numero} fornecedor={form.fornecedor} notas={notas} excludeId={nota.id} />
           
           <div>
             <label className="text-[11px] text-muted-foreground mb-1.5 block font-medium">Fornecedor / Prestador *</label>
@@ -230,6 +235,11 @@ const EditNotaModal = ({ nota, onClose }: EditNotaModalProps) => {
               </button>
             )}
             <input id="edit-attachment-input" type="file" accept=".pdf,.xml" onChange={onAttachmentSelect} className="hidden" />
+          </div>
+
+          {/* Comments Section */}
+          <div className="pt-3 border-t border-border/20">
+            <NotaComments notaId={nota.id} />
           </div>
 
           <div className="flex gap-3 pt-2">

@@ -173,6 +173,33 @@ export type Database = {
           },
         ]
       }
+      nota_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          nota_id: string
+          user_email: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          nota_id: string
+          user_email?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          nota_id?: string
+          user_email?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       notas_fiscais: {
         Row: {
           attachment_path: string | null
@@ -234,6 +261,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notas_recorrentes: {
+        Row: {
+          ativa: boolean
+          created_at: string
+          dia_vencimento: number
+          empresa_id: string | null
+          frequencia: string
+          id: string
+          nota_base_id: string
+          ultima_geracao: string | null
+          user_id: string
+        }
+        Insert: {
+          ativa?: boolean
+          created_at?: string
+          dia_vencimento?: number
+          empresa_id?: string | null
+          frequencia?: string
+          id?: string
+          nota_base_id: string
+          ultima_geracao?: string | null
+          user_id: string
+        }
+        Update: {
+          ativa?: boolean
+          created_at?: string
+          dia_vencimento?: number
+          empresa_id?: string | null
+          frequencia?: string
+          id?: string
+          nota_base_id?: string
+          ultima_geracao?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {

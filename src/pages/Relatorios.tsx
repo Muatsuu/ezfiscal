@@ -134,6 +134,38 @@ const Relatorios = () => {
     toast.success("Relatório exportado!"); setShowExportDialog(false);
   };
 
+  const exportExcel = () => {
+    if (filtered.length === 0) { toast.error("Nenhum dado para exportar"); return; }
+    const colMap: Record<string, (n: any) => string> = {
+      numero: (n) => n.numero, tipo: (n) => n.tipo,
+      fornecedor: (n) => n.fornecedor, valor: (n) => String(n.valor),
+      setor: (n) => n.setor, dataEmissao: (n) => n.dataEmissao,
+      dataVencimento: (n) => n.dataVencimento, status: (n) => n.status,
+      descricao: (n) => n.descricao || "",
+    };
+    const headers = selectedColumns.map((k) => ALL_COLUMNS.find((c) => c.key === k)?.label || k);
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<?mso-application progid="Excel.Sheet"?>\n';
+    xml += '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n';
+    xml += '<Worksheet ss:Name="Relatório"><Table>\n';
+    xml += '<Row>' + headers.map((h) => `<Cell><Data ss:Type="String">${h}</Data></Cell>`).join("") + '</Row>\n';
+    filtered.forEach((n) => {
+      xml += '<Row>' + selectedColumns.map((k) => {
+        const val = colMap[k]?.(n) || "";
+        const type = k === "valor" ? "Number" : "String";
+        return `<Cell><Data ss:Type="${type}">${val}</Data></Cell>`;
+      }).join("") + '</Row>\n';
+    });
+    xml += '</Table></Worksheet></Workbook>';
+    const blob = new Blob([xml], { type: "application/vnd.ms-excel" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url;
+    a.download = `relatorio-nfs-${new Date().toISOString().slice(0, 10)}.xls`;
+    a.click(); URL.revokeObjectURL(url);
+    toast.success("Excel exportado!");
+    setShowExportDialog(false);
+  };
+
   const toggleColumn = (key: string) => {
     setSelectedColumns((prev) => prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]);
   };
@@ -198,10 +230,16 @@ const Relatorios = () => {
                   </label>
                 ))}
               </div>
-              <button onClick={exportCSV} disabled={selectedColumns.length === 0}
-                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-50">
-                Exportar ({selectedColumns.length} colunas)
-              </button>
+              <div className="flex gap-2">
+                <button onClick={exportCSV} disabled={selectedColumns.length === 0}
+                  className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm disabled:opacity-50">
+                  CSV
+                </button>
+                <button onClick={exportExcel} disabled={selectedColumns.length === 0}
+                  className="flex-1 py-3 rounded-xl bg-success text-success-foreground font-semibold text-sm disabled:opacity-50">
+                  Excel
+                </button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>
