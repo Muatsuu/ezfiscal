@@ -4,6 +4,8 @@ import { X, Sparkles, Paperclip, FileCheck, Download, Loader2 } from "lucide-rea
 import { toast } from "sonner";
 import { useNotas } from "@/contexts/NFContext";
 import FornecedorCombobox from "@/components/FornecedorCombobox";
+import DuplicateWarning from "@/components/DuplicateWarning";
+import NotaComments from "@/components/NotaComments";
 
 const KEYWORDS_SETOR: Record<string, string[]> = {
   Administrativo: ["escritório", "material", "papelaria", "expediente", "administrativo", "recepção", "secretaria"],
