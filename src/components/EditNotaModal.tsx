@@ -237,6 +237,11 @@ const EditNotaModal = ({ nota, onClose }: EditNotaModalProps) => {
             <input id="edit-attachment-input" type="file" accept=".pdf,.xml" onChange={onAttachmentSelect} className="hidden" />
           </div>
 
+          {/* Comments Section */}
+          <div className="pt-3 border-t border-border/20">
+            <NotaComments notaId={nota.id} />
+          </div>
+
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl bg-secondary text-secondary-foreground font-medium text-sm hover:bg-secondary/80 transition-colors">
               Cancelar
