@@ -30,7 +30,7 @@ interface EditNotaModalProps {
 }
 
 const EditNotaModal = ({ nota, onClose }: EditNotaModalProps) => {
-  const { updateNota, uploadAttachment, getAttachmentUrl } = useNotas();
+  const { updateNota, uploadAttachment, getAttachmentUrl, notas } = useNotas();
   const [form, setForm] = useState({
     numero: nota.numero,
     tipo: nota.tipo,
