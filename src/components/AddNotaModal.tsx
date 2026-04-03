@@ -49,6 +49,9 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
   const [submitting, setSubmitting] = useState(false);
   const [parsing, setParsing] = useState(false);
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const [isRecorrente, setIsRecorrente] = useState(false);
+  const [diaVencimento, setDiaVencimento] = useState(1);
+  const { notas } = useNotas();
 
   const handleDescricaoChange = (value: string) => {
     const s = sugerirSetor(value);
