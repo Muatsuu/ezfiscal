@@ -352,6 +352,28 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
             </div>
           </div>
 
+          {/* Recurrence Toggle */}
+          <div className="mt-4 px-4 py-3 rounded-xl bg-secondary/60 space-y-2">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <div className={`w-9 h-5 rounded-full transition-colors relative ${isRecorrente ? "bg-primary" : "bg-muted"}`}
+                onClick={() => setIsRecorrente(!isRecorrente)}>
+                <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${isRecorrente ? "translate-x-4" : "translate-x-0.5"}`} />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Repeat className="w-3.5 h-3.5 text-primary" />
+                <span className="text-xs font-medium text-foreground">Nota recorrente (mensal)</span>
+              </div>
+            </label>
+            {isRecorrente && (
+              <div className="flex items-center gap-2 animate-fade-in">
+                <span className="text-[11px] text-muted-foreground">Dia do vencimento:</span>
+                <input type="number" min={1} max={28} value={diaVencimento}
+                  onChange={(e) => setDiaVencimento(Math.min(28, Math.max(1, parseInt(e.target.value) || 1)))}
+                  className="w-16 px-2 py-1.5 rounded-lg bg-secondary text-foreground text-xs border-0 outline-none focus:ring-2 focus:ring-primary/30" />
+              </div>
+            )}
+          </div>
+
           {/* Actions */}
           <div className="flex gap-3 pt-5 mt-2 border-t border-border/20">
             <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl bg-secondary text-secondary-foreground font-medium text-sm hover:bg-secondary/80 transition-colors">
