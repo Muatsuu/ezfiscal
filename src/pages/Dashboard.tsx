@@ -15,6 +15,7 @@ import {
   PieChart, Pie, Cell, CartesianGrid,
 } from "recharts";
 import InsightsSection from "@/components/dashboard/InsightsSection";
+import CashFlowChart from "@/components/CashFlowChart";
 
 const SECTOR_COLORS: Record<string, string> = {
   "Administrativo": "hsl(215, 100%, 58%)",
