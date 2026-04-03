@@ -183,6 +183,14 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
       if (attachmentFile) {
         await uploadAttachment(notaId, attachmentFile);
       }
+      if (isRecorrente) {
+        await supabase.from("notas_recorrentes").insert({
+          nota_base_id: notaId,
+          user_id: (await supabase.auth.getUser()).data.user?.id || "",
+          dia_vencimento: diaVencimento,
+          ativa: true,
+        });
+      }
     }
 
     setSubmitting(false);
