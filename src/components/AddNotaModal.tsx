@@ -254,8 +254,11 @@ const AddNotaModal = ({ onClose }: AddNotaModalProps) => {
             ))}
           </div>
 
+          {/* Duplicate Warning */}
+          <DuplicateWarning numero={form.numero} fornecedor={form.fornecedor} notas={notas} />
+
           {/* Two-column layout */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-3 mt-3">
             {/* Left Column */}
             <div className="space-y-3">
               <div>
