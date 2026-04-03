@@ -143,6 +143,9 @@ const EditNotaModal = ({ nota, onClose }: EditNotaModalProps) => {
           </div>
 
           <input placeholder="Número da NF *" value={form.numero} onChange={(e) => setForm((f) => ({ ...f, numero: e.target.value }))} className={inputClass} />
+
+          {/* Duplicate Warning */}
+          <DuplicateWarning numero={form.numero} fornecedor={form.fornecedor} notas={notas} excludeId={nota.id} />
           
           <div>
             <label className="text-[11px] text-muted-foreground mb-1.5 block font-medium">Fornecedor / Prestador *</label>
