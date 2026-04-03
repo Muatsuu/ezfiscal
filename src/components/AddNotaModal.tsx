@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { SETORES } from "@/types/notaFiscal";
-import { X, Sparkles, Upload, Loader2, Paperclip, FileCheck } from "lucide-react";
+import { X, Sparkles, Upload, Loader2, Paperclip, FileCheck, Repeat } from "lucide-react";
 import { toast } from "sonner";
 import { useNotas } from "@/contexts/NFContext";
 import { useAuditLog } from "@/hooks/useAuditLog";
 import { supabase } from "@/integrations/supabase/client";
 import FornecedorCombobox from "@/components/FornecedorCombobox";
+import DuplicateWarning from "@/components/DuplicateWarning";
 
 const KEYWORDS_SETOR: Record<string, string[]> = {
   Administrativo: ["escritório", "material", "papelaria", "expediente", "administrativo", "recepção", "secretaria"],
