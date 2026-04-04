@@ -313,7 +313,7 @@ const NotasList = () => {
       ) : (
         /* Table View */
         <div className="glass-card rounded-2xl overflow-hidden">
-          <div className="overflow-x-auto max-h-[70vh]">
+          <div className="overflow-x-auto max-h-[70vh] -mx-0.5">
             <table className="w-full text-xs">
               <thead className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm">
                 <tr className="border-b border-border/30">

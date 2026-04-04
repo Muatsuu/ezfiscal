@@ -170,7 +170,7 @@ const Calendario = () => {
       </div>
 
       {/* Upcoming */}
-      <div className="glass-card rounded-2xl p-6">
+      <div className="glass-card rounded-2xl p-4 lg:p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
             <Clock className="w-4 h-4 text-primary" />

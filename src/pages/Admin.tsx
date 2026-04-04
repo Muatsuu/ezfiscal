@@ -175,39 +175,39 @@ const Admin = () => {
 
       {/* Overview Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3">
-        <div className="glass-card rounded-2xl p-5 bg-gradient-to-br from-primary/5 to-transparent">
-          <div className="flex items-center gap-2 mb-2">
-            <Users className="w-4 h-4 text-primary" />
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Usuários</span>
+        <div className="glass-card rounded-xl lg:rounded-2xl p-3 lg:p-5 bg-gradient-to-br from-primary/5 to-transparent min-w-0">
+          <div className="flex items-center gap-1.5 lg:gap-2 mb-1.5 lg:mb-2">
+            <Users className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-primary flex-shrink-0" />
+            <span className="text-[9px] lg:text-[10px] font-semibold text-muted-foreground uppercase tracking-wider truncate">Usuários</span>
           </div>
-          <p className="text-2xl font-bold text-foreground">{users.length}</p>
-          <p className="text-[10px] text-muted-foreground mt-1">{adminCount} admin · {userCount} usuário{userCount !== 1 ? "s" : ""}</p>
+          <p className="text-xl lg:text-2xl font-bold text-foreground">{users.length}</p>
+          <p className="text-[9px] lg:text-[10px] text-muted-foreground mt-0.5 lg:mt-1 truncate">{adminCount} admin · {userCount} usr</p>
         </div>
-        <div className="glass-card rounded-2xl p-5 bg-gradient-to-br from-accent/5 to-transparent">
-          <div className="flex items-center gap-2 mb-2">
-            <Building2 className="w-4 h-4 text-accent" />
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Empresas</span>
+        <div className="glass-card rounded-xl lg:rounded-2xl p-3 lg:p-5 bg-gradient-to-br from-accent/5 to-transparent min-w-0">
+          <div className="flex items-center gap-1.5 lg:gap-2 mb-1.5 lg:mb-2">
+            <Building2 className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-accent flex-shrink-0" />
+            <span className="text-[9px] lg:text-[10px] font-semibold text-muted-foreground uppercase tracking-wider truncate">Empresas</span>
           </div>
-          <p className="text-2xl font-bold text-foreground">{empresas.length}</p>
-          <p className="text-[10px] text-muted-foreground mt-1">cadastrada{empresas.length !== 1 ? "s" : ""}</p>
+          <p className="text-xl lg:text-2xl font-bold text-foreground">{empresas.length}</p>
+          <p className="text-[9px] lg:text-[10px] text-muted-foreground mt-0.5 lg:mt-1 truncate">cadastrada{empresas.length !== 1 ? "s" : ""}</p>
         </div>
-        <div className="glass-card rounded-2xl p-5 bg-gradient-to-br from-success/5 to-transparent">
-          <div className="flex items-center gap-2 mb-2">
-            <Activity className="w-4 h-4 text-success" />
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Registros</span>
+        <div className="glass-card rounded-xl lg:rounded-2xl p-3 lg:p-5 bg-gradient-to-br from-success/5 to-transparent min-w-0">
+          <div className="flex items-center gap-1.5 lg:gap-2 mb-1.5 lg:mb-2">
+            <Activity className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-success flex-shrink-0" />
+            <span className="text-[9px] lg:text-[10px] font-semibold text-muted-foreground uppercase tracking-wider truncate">Registros</span>
           </div>
-          <p className="text-2xl font-bold text-foreground">{auditLogs.length}</p>
-          <p className="text-[10px] text-muted-foreground mt-1">no log de auditoria</p>
+          <p className="text-xl lg:text-2xl font-bold text-foreground">{auditLogs.length}</p>
+          <p className="text-[9px] lg:text-[10px] text-muted-foreground mt-0.5 lg:mt-1 truncate">auditoria</p>
         </div>
-        <div className="glass-card rounded-2xl p-5 bg-gradient-to-br from-warning/5 to-transparent">
-          <div className="flex items-center gap-2 mb-2">
-            <Clock className="w-4 h-4 text-warning" />
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Última ação</span>
+        <div className="glass-card rounded-xl lg:rounded-2xl p-3 lg:p-5 bg-gradient-to-br from-warning/5 to-transparent min-w-0">
+          <div className="flex items-center gap-1.5 lg:gap-2 mb-1.5 lg:mb-2">
+            <Clock className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-warning flex-shrink-0" />
+            <span className="text-[9px] lg:text-[10px] font-semibold text-muted-foreground uppercase tracking-wider truncate">Última ação</span>
           </div>
-          <p className="text-sm font-semibold text-foreground mt-1 truncate">
+          <p className="text-xs lg:text-sm font-semibold text-foreground mt-0.5 lg:mt-1 truncate">
             {recentActivity ? `${actionLabels[recentActivity.action] || recentActivity.action}` : "—"}
           </p>
-          <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+          <p className="text-[9px] lg:text-[10px] text-muted-foreground mt-0.5 truncate">
             {recentActivity ? new Date(recentActivity.created_at).toLocaleString("pt-BR") : "Sem atividade"}
           </p>
         </div>

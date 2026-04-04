@@ -104,7 +104,7 @@ const InsightsSection = ({ notas }: InsightsSectionProps) => {
       </div>
 
       {/* Sector Comparison Card */}
-      <div className="glass-card rounded-2xl p-6">
+      <div className="glass-card rounded-2xl p-4 lg:p-6 min-w-0">
         <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-5 flex items-center gap-2">
           {insights.overallChange <= 0 ? (
             <TrendingDown className="w-4 h-4 text-success" />

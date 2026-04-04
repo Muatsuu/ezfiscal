@@ -361,7 +361,7 @@ const Dashboard = () => {
       <InsightsSection notas={notas} />
 
       {/* Notas Recentes */}
-      <div className="glass-card rounded-2xl p-6">
+      <div className="glass-card rounded-2xl p-4 lg:p-6 min-w-0">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">Notas Recentes</h3>
           <button

@@ -394,7 +394,7 @@ const Relatorios = () => {
         </div>
 
         {/* Top Fornecedores */}
-        <div className="glass-card rounded-2xl p-6">
+        <div className="glass-card rounded-2xl p-4 lg:p-6 min-w-0">
           <h3 className="text-sm font-semibold text-foreground mb-5 flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-accent" />
             Top Fornecedores

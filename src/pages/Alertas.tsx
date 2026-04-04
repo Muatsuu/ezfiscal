@@ -259,12 +259,12 @@ const Alertas = () => {
 
       {/* Total value bar */}
       {totalAll > 0 && (
-        <div className="glass-card rounded-2xl p-5 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4 text-muted-foreground" />
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Exposição total</span>
+        <div className="glass-card rounded-2xl p-4 lg:p-5 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 lg:gap-2 min-w-0">
+            <Shield className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            <span className="text-[10px] lg:text-xs font-semibold text-muted-foreground uppercase tracking-wider truncate">Exposição total</span>
           </div>
-          <span className="text-lg font-bold text-foreground font-mono">{formatCurrency(totalAll)}</span>
+          <span className="text-base lg:text-lg font-bold text-foreground font-mono whitespace-nowrap">{formatCurrency(totalAll)}</span>
         </div>
       )}
     </div>
