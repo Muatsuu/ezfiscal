@@ -97,7 +97,7 @@ const Calendario = () => {
       </div>
 
       {/* Calendar Grid */}
-      <div className="glass-card rounded-2xl p-4 lg:p-6">
+      <div className="glass-card rounded-2xl p-2.5 sm:p-4 lg:p-6 overflow-x-hidden">
         <div className="grid grid-cols-7 gap-1 mb-2">
           {weekDays.map((d) => (
             <div key={d} className="text-center text-[10px] lg:text-xs font-semibold text-muted-foreground py-2">
