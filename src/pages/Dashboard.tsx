@@ -204,19 +204,19 @@ const Dashboard = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 lg:gap-4">
         {kpiCards.map((card) => (
           <div
             key={card.label}
-            className={`glass-card rounded-2xl p-5 lg:p-6 group hover-lift gradient-border bg-gradient-to-br ${card.gradient}`}
+            className={`glass-card rounded-2xl p-4 lg:p-6 group hover-lift gradient-border bg-gradient-to-br ${card.gradient} min-w-0`}
           >
-            <div className="flex items-center gap-2 mb-3">
-              <div className={`w-9 h-9 rounded-xl ${card.bgClass} flex items-center justify-center`}>
-                <card.icon className={`w-4 h-4 ${card.colorClass}`} />
+            <div className="flex items-center gap-1.5 mb-2 lg:mb-3">
+              <div className={`w-7 h-7 lg:w-9 lg:h-9 rounded-lg lg:rounded-xl ${card.bgClass} flex items-center justify-center flex-shrink-0`}>
+                <card.icon className={`w-3.5 h-3.5 lg:w-4 lg:h-4 ${card.colorClass}`} />
               </div>
-              <span className="text-[10px] lg:text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{card.label}</span>
+              <span className="text-[9px] lg:text-[11px] font-semibold text-muted-foreground uppercase tracking-wider truncate">{card.label}</span>
             </div>
-            <p className={`text-xl lg:text-2xl font-bold tracking-tight ${card.label === "Total de NFs" ? "text-foreground" : card.colorClass}`}>
+            <p className={`text-base lg:text-2xl font-bold tracking-tight truncate ${card.label === "Total de NFs" ? "text-foreground" : card.colorClass}`}>
               {card.value}
             </p>
             {card.badge && (
