@@ -331,10 +331,10 @@ const Dashboard = () => {
             {stats.porSetorData.map((item) => {
               const pct = stats.total > 0 ? (item.valor / stats.total) * 100 : 0;
               return (
-                <div key={item.setor} className="flex items-center gap-3 group">
-                  <div className="w-3 h-3 rounded-full flex-shrink-0 ring-2 ring-offset-2 ring-offset-card" style={{ backgroundColor: item.color }} />
-                  <span className="text-xs lg:text-sm text-foreground min-w-[90px] lg:min-w-[130px] truncate font-medium">{item.setor}</span>
-                  <div className="flex-1 h-2.5 bg-secondary rounded-full overflow-hidden min-w-[40px]">
+                <div key={item.setor} className="flex items-center gap-2 lg:gap-3 group">
+                  <div className="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
+                  <span className="text-[11px] lg:text-sm text-foreground min-w-0 max-w-[70px] lg:max-w-[130px] truncate font-medium">{item.setor}</span>
+                  <div className="flex-1 h-2 lg:h-2.5 bg-secondary rounded-full overflow-hidden min-w-[30px]">
                     <div
                       className="h-full rounded-full transition-all duration-1000 ease-out"
                       style={{
@@ -343,8 +343,8 @@ const Dashboard = () => {
                       }}
                     />
                   </div>
-                  <span className="text-xs lg:text-sm font-bold text-foreground min-w-[80px] lg:min-w-[110px] text-right font-mono">{formatCurrency(item.valor)}</span>
-                  <span className="text-[11px] text-muted-foreground w-10 text-right font-mono">{pct.toFixed(0)}%</span>
+                  <span className="text-[10px] lg:text-sm font-bold text-foreground min-w-[60px] lg:min-w-[110px] text-right font-mono">{formatCurrency(item.valor)}</span>
+                  <span className="text-[10px] text-muted-foreground w-8 lg:w-10 text-right font-mono hidden sm:inline">{pct.toFixed(0)}%</span>
                 </div>
               );
             })}
