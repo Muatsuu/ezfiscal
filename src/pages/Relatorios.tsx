@@ -258,7 +258,7 @@ const Relatorios = () => {
       </div>
 
       {/* Stat Cards — 5 columns */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 lg:gap-3">
         {[
           { label: "Total", value: formatCurrency(stats.total), icon: DollarSign, colorClass: "text-foreground", gradient: "from-primary/5 to-transparent" },
           { label: "Pago", value: formatCurrency(stats.totalPago), icon: ArrowDownRight, colorClass: "text-success", gradient: "from-success/5 to-transparent" },
@@ -266,12 +266,12 @@ const Relatorios = () => {
           { label: "Ticket Médio", value: formatCurrency(stats.ticketMedio), icon: Hash, colorClass: "text-primary", gradient: "from-primary/5 to-transparent" },
           { label: "Taxa Pgto.", value: `${stats.taxaPagamento.toFixed(0)}%`, icon: TrendingUp, colorClass: "text-success", gradient: "from-success/5 to-transparent" },
         ].map((card) => (
-          <div key={card.label} className={`glass-card rounded-2xl p-5 bg-gradient-to-br ${card.gradient} hover-lift`}>
-            <div className="flex items-center gap-1.5 mb-2">
-              <card.icon className={`w-3.5 h-3.5 ${card.colorClass}`} />
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{card.label}</p>
+          <div key={card.label} className={`glass-card rounded-xl lg:rounded-2xl p-3 lg:p-5 bg-gradient-to-br ${card.gradient} min-w-0`}>
+            <div className="flex items-center gap-1 lg:gap-1.5 mb-1.5 lg:mb-2">
+              <card.icon className={`w-3 h-3 lg:w-3.5 lg:h-3.5 ${card.colorClass} flex-shrink-0`} />
+              <p className="text-[9px] lg:text-[10px] font-semibold text-muted-foreground uppercase tracking-wider truncate">{card.label}</p>
             </div>
-            <p className={`text-lg lg:text-xl font-bold font-mono ${card.colorClass}`}>{card.value}</p>
+            <p className={`text-sm lg:text-xl font-bold font-mono ${card.colorClass} truncate`}>{card.value}</p>
           </div>
         ))}
       </div>
