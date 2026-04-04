@@ -106,9 +106,9 @@ const Calendario = () => {
           ))}
         </div>
 
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
           {cells.map((day, i) => {
-            if (day === null) return <div key={`empty-${i}`} className="min-h-[60px] lg:min-h-[85px]" />;
+            if (day === null) return <div key={`empty-${i}`} className="min-h-[52px] sm:min-h-[60px] lg:min-h-[85px]" />;
 
             const dayNotas = calendarData.notasByDay[day] || [];
             const hasVencidas = dayNotas.some((n) => n.status === "vencida");
