@@ -110,12 +110,12 @@ const NotasList = () => {
 
   return (
     <div className="space-y-5 pt-2">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-foreground flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-            <FileText className="w-5 h-5 text-primary" />
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-xl lg:text-2xl font-bold text-foreground flex items-center gap-2">
+          <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <FileText className="w-4 h-4 lg:w-5 lg:h-5 text-primary" />
           </div>
-          Notas Fiscais
+          <span className="truncate">Notas Fiscais</span>
         </h2>
         <div className="flex gap-2">
           {/* View mode toggle */}
