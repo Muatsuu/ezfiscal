@@ -324,8 +324,8 @@ const Dashboard = () => {
       </div>
 
       {/* Gastos por Setor */}
-      <div className="glass-card rounded-2xl p-6">
-        <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-5">Gastos por Setor</h3>
+      <div className="glass-card rounded-2xl p-4 lg:p-6 min-w-0 overflow-hidden">
+        <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-4 lg:mb-5">Gastos por Setor</h3>
         {stats.porSetorData.length > 0 ? (
           <div className="space-y-4">
             {stats.porSetorData.map((item) => {
