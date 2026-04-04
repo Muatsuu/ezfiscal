@@ -312,8 +312,8 @@ const Relatorios = () => {
           )}
         </div>
 
-        <div className="glass-card rounded-2xl p-6">
-          <h3 className="text-sm font-semibold text-foreground mb-5 flex items-center gap-2">
+        <div className="glass-card rounded-2xl p-4 lg:p-6 min-w-0">
+          <h3 className="text-sm font-semibold text-foreground mb-4 lg:mb-5 flex items-center gap-2">
             <PieChartIcon className="w-4 h-4 text-accent" />
             Por Setor
           </h3>
