@@ -165,7 +165,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="space-y-6 pt-2 overflow-x-hidden">
+    <div className="space-y-5 pt-2 overflow-x-hidden w-full max-w-full">
       {/* Header with greeting */}
       <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3">
         <div>
