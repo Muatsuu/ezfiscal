@@ -174,7 +174,7 @@ const Admin = () => {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3">
         <div className="glass-card rounded-2xl p-5 bg-gradient-to-br from-primary/5 to-transparent">
           <div className="flex items-center gap-2 mb-2">
             <Users className="w-4 h-4 text-primary" />
