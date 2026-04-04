@@ -118,7 +118,7 @@ const Calendario = () => {
             return (
               <div
                 key={day}
-                className={`min-h-[60px] lg:min-h-[85px] rounded-xl p-1.5 lg:p-2 transition-all duration-200 ${
+                className={`min-h-[52px] sm:min-h-[60px] lg:min-h-[85px] rounded-lg lg:rounded-xl p-1 sm:p-1.5 lg:p-2 transition-all duration-200 ${
                   isToday(day)
                     ? "bg-primary/8 border border-primary/30 shadow-sm"
                     : dayNotas.length > 0
