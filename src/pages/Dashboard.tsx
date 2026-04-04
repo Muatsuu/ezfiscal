@@ -273,7 +273,7 @@ const Dashboard = () => {
         </div>
 
         {/* Sector Pie */}
-        <div className="glass-card rounded-2xl p-6">
+        <div className="glass-card rounded-2xl p-4 lg:p-6 min-w-0">
           <h3 className="text-sm font-semibold text-foreground mb-5">Distribuição por Setor</h3>
           {stats.sectorPie.length > 0 ? (
             <div className="flex flex-col items-center">
