@@ -85,30 +85,30 @@ const Alertas = () => {
 
       {/* Summary cards */}
       {(aVencer.length > 0 || vencidas.length > 0 || venceHoje.length > 0) && (
-        <div className="grid grid-cols-3 gap-3">
-          <div className="glass-card rounded-2xl p-5 bg-gradient-to-br from-destructive/5 to-transparent hover-lift">
-            <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="w-4 h-4 text-destructive" />
-              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Vencidas</span>
+        <div className="grid grid-cols-3 gap-2 lg:gap-3">
+          <div className="glass-card rounded-xl lg:rounded-2xl p-3 lg:p-5 bg-gradient-to-br from-destructive/5 to-transparent">
+            <div className="flex items-center gap-1 lg:gap-2 mb-1.5 lg:mb-2">
+              <AlertTriangle className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-destructive flex-shrink-0" />
+              <span className="text-[8px] lg:text-[10px] font-semibold text-muted-foreground uppercase tracking-wider truncate">Vencidas</span>
             </div>
-            <p className="text-xl font-bold text-destructive">{vencidas.length}</p>
-            <p className="text-[11px] text-muted-foreground mt-1 font-mono">{formatCurrency(totalVencidas)}</p>
+            <p className="text-lg lg:text-xl font-bold text-destructive">{vencidas.length}</p>
+            <p className="text-[10px] lg:text-[11px] text-muted-foreground mt-0.5 lg:mt-1 font-mono truncate">{formatCurrency(totalVencidas)}</p>
           </div>
-          <div className="glass-card rounded-2xl p-5 bg-gradient-to-br from-warning/5 to-transparent hover-lift">
-            <div className="flex items-center gap-2 mb-2">
-              <Zap className="w-4 h-4 text-warning" />
-              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Hoje</span>
+          <div className="glass-card rounded-xl lg:rounded-2xl p-3 lg:p-5 bg-gradient-to-br from-warning/5 to-transparent">
+            <div className="flex items-center gap-1 lg:gap-2 mb-1.5 lg:mb-2">
+              <Zap className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-warning flex-shrink-0" />
+              <span className="text-[8px] lg:text-[10px] font-semibold text-muted-foreground uppercase tracking-wider truncate">Hoje</span>
             </div>
-            <p className="text-xl font-bold text-warning">{venceHoje.length}</p>
-            <p className="text-[11px] text-muted-foreground mt-1 font-mono">{formatCurrency(totalHoje)}</p>
+            <p className="text-lg lg:text-xl font-bold text-warning">{venceHoje.length}</p>
+            <p className="text-[10px] lg:text-[11px] text-muted-foreground mt-0.5 lg:mt-1 font-mono truncate">{formatCurrency(totalHoje)}</p>
           </div>
-          <div className="glass-card rounded-2xl p-5 bg-gradient-to-br from-primary/5 to-transparent hover-lift">
-            <div className="flex items-center gap-2 mb-2">
-              <Clock className="w-4 h-4 text-primary" />
-              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Em breve</span>
+          <div className="glass-card rounded-xl lg:rounded-2xl p-3 lg:p-5 bg-gradient-to-br from-primary/5 to-transparent">
+            <div className="flex items-center gap-1 lg:gap-2 mb-1.5 lg:mb-2">
+              <Clock className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-primary flex-shrink-0" />
+              <span className="text-[8px] lg:text-[10px] font-semibold text-muted-foreground uppercase tracking-wider truncate">Em breve</span>
             </div>
-            <p className="text-xl font-bold text-primary">{aVencer.length}</p>
-            <p className="text-[11px] text-muted-foreground mt-1 font-mono">{formatCurrency(totalAVencer)}</p>
+            <p className="text-lg lg:text-xl font-bold text-primary">{aVencer.length}</p>
+            <p className="text-[10px] lg:text-[11px] text-muted-foreground mt-0.5 lg:mt-1 font-mono truncate">{formatCurrency(totalAVencer)}</p>
           </div>
         </div>
       )}
