@@ -97,7 +97,7 @@ const Calendario = () => {
       </div>
 
       {/* Calendar Grid */}
-      <div className="glass-card rounded-2xl p-4 lg:p-6">
+      <div className="glass-card rounded-2xl p-2.5 sm:p-4 lg:p-6 overflow-x-hidden">
         <div className="grid grid-cols-7 gap-1 mb-2">
           {weekDays.map((d) => (
             <div key={d} className="text-center text-[10px] lg:text-xs font-semibold text-muted-foreground py-2">
@@ -106,9 +106,9 @@ const Calendario = () => {
           ))}
         </div>
 
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
           {cells.map((day, i) => {
-            if (day === null) return <div key={`empty-${i}`} className="min-h-[60px] lg:min-h-[85px]" />;
+            if (day === null) return <div key={`empty-${i}`} className="min-h-[52px] sm:min-h-[60px] lg:min-h-[85px]" />;
 
             const dayNotas = calendarData.notasByDay[day] || [];
             const hasVencidas = dayNotas.some((n) => n.status === "vencida");
@@ -118,7 +118,7 @@ const Calendario = () => {
             return (
               <div
                 key={day}
-                className={`min-h-[60px] lg:min-h-[85px] rounded-xl p-1.5 lg:p-2 transition-all duration-200 ${
+                className={`min-h-[52px] sm:min-h-[60px] lg:min-h-[85px] rounded-lg lg:rounded-xl p-1 sm:p-1.5 lg:p-2 transition-all duration-200 ${
                   isToday(day)
                     ? "bg-primary/8 border border-primary/30 shadow-sm"
                     : dayNotas.length > 0
@@ -170,7 +170,7 @@ const Calendario = () => {
       </div>
 
       {/* Upcoming */}
-      <div className="glass-card rounded-2xl p-6">
+      <div className="glass-card rounded-2xl p-4 lg:p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
             <Clock className="w-4 h-4 text-primary" />

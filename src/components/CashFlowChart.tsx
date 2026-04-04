@@ -42,13 +42,13 @@ const CashFlowChart = ({ notas }: CashFlowChartProps) => {
   if (totalProjected === 0) return null;
 
   return (
-    <div className="glass-card rounded-2xl p-6">
-      <div className="flex items-center justify-between mb-5">
+    <div className="glass-card rounded-2xl p-4 lg:p-6 min-w-0 overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 lg:mb-5">
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
           <Landmark className="w-4 h-4 text-accent" />
-          Fluxo de Caixa — Próximas 12 Semanas
+          <span className="truncate">Fluxo de Caixa — 12 Semanas</span>
         </h3>
-        <span className="text-xs font-mono font-bold text-warning bg-warning/10 px-3 py-1 rounded-full">
+        <span className="text-xs font-mono font-bold text-warning bg-warning/10 px-3 py-1 rounded-full self-start sm:self-auto whitespace-nowrap">
           {formatCurrency(totalProjected)} previsto
         </span>
       </div>

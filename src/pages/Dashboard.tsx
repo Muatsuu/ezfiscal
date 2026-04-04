@@ -165,7 +165,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="space-y-6 pt-2 overflow-x-hidden">
+    <div className="space-y-5 pt-2 overflow-x-hidden w-full max-w-full">
       {/* Header with greeting */}
       <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3">
         <div>
@@ -204,19 +204,19 @@ const Dashboard = () => {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 lg:gap-4">
         {kpiCards.map((card) => (
           <div
             key={card.label}
-            className={`glass-card rounded-2xl p-5 lg:p-6 group hover-lift gradient-border bg-gradient-to-br ${card.gradient}`}
+            className={`glass-card rounded-2xl p-4 lg:p-6 group hover-lift gradient-border bg-gradient-to-br ${card.gradient} min-w-0`}
           >
-            <div className="flex items-center gap-2 mb-3">
-              <div className={`w-9 h-9 rounded-xl ${card.bgClass} flex items-center justify-center`}>
-                <card.icon className={`w-4 h-4 ${card.colorClass}`} />
+            <div className="flex items-center gap-1.5 mb-2 lg:mb-3">
+              <div className={`w-7 h-7 lg:w-9 lg:h-9 rounded-lg lg:rounded-xl ${card.bgClass} flex items-center justify-center flex-shrink-0`}>
+                <card.icon className={`w-3.5 h-3.5 lg:w-4 lg:h-4 ${card.colorClass}`} />
               </div>
-              <span className="text-[10px] lg:text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{card.label}</span>
+              <span className="text-[9px] lg:text-[11px] font-semibold text-muted-foreground uppercase tracking-wider truncate">{card.label}</span>
             </div>
-            <p className={`text-xl lg:text-2xl font-bold tracking-tight ${card.label === "Total de NFs" ? "text-foreground" : card.colorClass}`}>
+            <p className={`text-base lg:text-2xl font-bold tracking-tight truncate ${card.label === "Total de NFs" ? "text-foreground" : card.colorClass}`}>
               {card.value}
             </p>
             {card.badge && (
@@ -229,9 +229,9 @@ const Dashboard = () => {
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 overflow-x-hidden">
         {/* Trend Chart */}
-        <div className="lg:col-span-2 glass-card rounded-2xl p-6">
+        <div className="lg:col-span-2 glass-card rounded-2xl p-4 lg:p-6 min-w-0">
           <h3 className="text-sm font-semibold text-foreground mb-5 flex items-center gap-2">
             <Zap className="w-4 h-4 text-primary" />
             Tendência de Gastos
@@ -273,7 +273,7 @@ const Dashboard = () => {
         </div>
 
         {/* Sector Pie */}
-        <div className="glass-card rounded-2xl p-6">
+        <div className="glass-card rounded-2xl p-4 lg:p-6 min-w-0">
           <h3 className="text-sm font-semibold text-foreground mb-5">Distribuição por Setor</h3>
           {stats.sectorPie.length > 0 ? (
             <div className="flex flex-col items-center">
@@ -324,17 +324,17 @@ const Dashboard = () => {
       </div>
 
       {/* Gastos por Setor */}
-      <div className="glass-card rounded-2xl p-6">
-        <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-5">Gastos por Setor</h3>
+      <div className="glass-card rounded-2xl p-4 lg:p-6 min-w-0 overflow-hidden">
+        <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-4 lg:mb-5">Gastos por Setor</h3>
         {stats.porSetorData.length > 0 ? (
           <div className="space-y-4">
             {stats.porSetorData.map((item) => {
               const pct = stats.total > 0 ? (item.valor / stats.total) * 100 : 0;
               return (
-                <div key={item.setor} className="flex items-center gap-3 group">
-                  <div className="w-3 h-3 rounded-full flex-shrink-0 ring-2 ring-offset-2 ring-offset-card" style={{ backgroundColor: item.color }} />
-                  <span className="text-xs lg:text-sm text-foreground min-w-[90px] lg:min-w-[130px] truncate font-medium">{item.setor}</span>
-                  <div className="flex-1 h-2.5 bg-secondary rounded-full overflow-hidden min-w-[40px]">
+                <div key={item.setor} className="flex items-center gap-2 lg:gap-3 group">
+                  <div className="w-2.5 h-2.5 lg:w-3 lg:h-3 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
+                  <span className="text-[11px] lg:text-sm text-foreground min-w-0 max-w-[70px] lg:max-w-[130px] truncate font-medium">{item.setor}</span>
+                  <div className="flex-1 h-2 lg:h-2.5 bg-secondary rounded-full overflow-hidden min-w-[30px]">
                     <div
                       className="h-full rounded-full transition-all duration-1000 ease-out"
                       style={{
@@ -343,8 +343,8 @@ const Dashboard = () => {
                       }}
                     />
                   </div>
-                  <span className="text-xs lg:text-sm font-bold text-foreground min-w-[80px] lg:min-w-[110px] text-right font-mono">{formatCurrency(item.valor)}</span>
-                  <span className="text-[11px] text-muted-foreground w-10 text-right font-mono">{pct.toFixed(0)}%</span>
+                  <span className="text-[10px] lg:text-sm font-bold text-foreground min-w-[60px] lg:min-w-[110px] text-right font-mono">{formatCurrency(item.valor)}</span>
+                  <span className="text-[10px] text-muted-foreground w-8 lg:w-10 text-right font-mono hidden sm:inline">{pct.toFixed(0)}%</span>
                 </div>
               );
             })}
@@ -361,7 +361,7 @@ const Dashboard = () => {
       <InsightsSection notas={notas} />
 
       {/* Notas Recentes */}
-      <div className="glass-card rounded-2xl p-6">
+      <div className="glass-card rounded-2xl p-4 lg:p-6 min-w-0">
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">Notas Recentes</h3>
           <button

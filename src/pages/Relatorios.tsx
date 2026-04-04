@@ -258,7 +258,7 @@ const Relatorios = () => {
       </div>
 
       {/* Stat Cards — 5 columns */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 lg:gap-3">
         {[
           { label: "Total", value: formatCurrency(stats.total), icon: DollarSign, colorClass: "text-foreground", gradient: "from-primary/5 to-transparent" },
           { label: "Pago", value: formatCurrency(stats.totalPago), icon: ArrowDownRight, colorClass: "text-success", gradient: "from-success/5 to-transparent" },
@@ -266,19 +266,19 @@ const Relatorios = () => {
           { label: "Ticket Médio", value: formatCurrency(stats.ticketMedio), icon: Hash, colorClass: "text-primary", gradient: "from-primary/5 to-transparent" },
           { label: "Taxa Pgto.", value: `${stats.taxaPagamento.toFixed(0)}%`, icon: TrendingUp, colorClass: "text-success", gradient: "from-success/5 to-transparent" },
         ].map((card) => (
-          <div key={card.label} className={`glass-card rounded-2xl p-5 bg-gradient-to-br ${card.gradient} hover-lift`}>
-            <div className="flex items-center gap-1.5 mb-2">
-              <card.icon className={`w-3.5 h-3.5 ${card.colorClass}`} />
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{card.label}</p>
+          <div key={card.label} className={`glass-card rounded-xl lg:rounded-2xl p-3 lg:p-5 bg-gradient-to-br ${card.gradient} min-w-0`}>
+            <div className="flex items-center gap-1 lg:gap-1.5 mb-1.5 lg:mb-2">
+              <card.icon className={`w-3 h-3 lg:w-3.5 lg:h-3.5 ${card.colorClass} flex-shrink-0`} />
+              <p className="text-[9px] lg:text-[10px] font-semibold text-muted-foreground uppercase tracking-wider truncate">{card.label}</p>
             </div>
-            <p className={`text-lg lg:text-xl font-bold font-mono ${card.colorClass}`}>{card.value}</p>
+            <p className={`text-sm lg:text-xl font-bold font-mono ${card.colorClass} truncate`}>{card.value}</p>
           </div>
         ))}
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 glass-card rounded-2xl p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 overflow-x-hidden">
+        <div className="lg:col-span-2 glass-card rounded-2xl p-4 lg:p-6 min-w-0">
           <h3 className="text-sm font-semibold text-foreground mb-5 flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-primary" />
             Comparativo Mensal
@@ -312,8 +312,8 @@ const Relatorios = () => {
           )}
         </div>
 
-        <div className="glass-card rounded-2xl p-6">
-          <h3 className="text-sm font-semibold text-foreground mb-5 flex items-center gap-2">
+        <div className="glass-card rounded-2xl p-4 lg:p-6 min-w-0">
+          <h3 className="text-sm font-semibold text-foreground mb-4 lg:mb-5 flex items-center gap-2">
             <PieChartIcon className="w-4 h-4 text-accent" />
             Por Setor
           </h3>
@@ -358,9 +358,9 @@ const Relatorios = () => {
       </div>
 
       {/* Bottom row: Volume + Top Fornecedores */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-x-hidden">
         {/* Volume */}
-        <div className="glass-card rounded-2xl p-6">
+        <div className="glass-card rounded-2xl p-4 lg:p-6 min-w-0">
           <h3 className="text-sm font-semibold text-foreground mb-5 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-primary" />
             Volume de Notas
@@ -394,7 +394,7 @@ const Relatorios = () => {
         </div>
 
         {/* Top Fornecedores */}
-        <div className="glass-card rounded-2xl p-6">
+        <div className="glass-card rounded-2xl p-4 lg:p-6 min-w-0">
           <h3 className="text-sm font-semibold text-foreground mb-5 flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-accent" />
             Top Fornecedores

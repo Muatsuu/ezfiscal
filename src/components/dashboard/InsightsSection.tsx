@@ -70,9 +70,9 @@ const InsightsSection = ({ notas }: InsightsSectionProps) => {
   }, [notas]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 overflow-x-hidden">
       {/* Projection Card */}
-      <div className="glass-card rounded-2xl p-6">
+      <div className="glass-card rounded-2xl p-4 lg:p-6 min-w-0">
         <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-5 flex items-center gap-2">
           <Target className="w-4 h-4 text-primary" />
           Projeção do Mês
@@ -104,7 +104,7 @@ const InsightsSection = ({ notas }: InsightsSectionProps) => {
       </div>
 
       {/* Sector Comparison Card */}
-      <div className="glass-card rounded-2xl p-6">
+      <div className="glass-card rounded-2xl p-4 lg:p-6 min-w-0">
         <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-5 flex items-center gap-2">
           {insights.overallChange <= 0 ? (
             <TrendingDown className="w-4 h-4 text-success" />
