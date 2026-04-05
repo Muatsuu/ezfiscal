@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NotaFiscal, SETORES } from "@/types/notaFiscal";
 import { X, Sparkles, Paperclip, FileCheck, Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
