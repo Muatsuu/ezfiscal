@@ -117,7 +117,7 @@ const EditNotaModal = ({ nota, onClose }: EditNotaModalProps) => {
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-background/70 backdrop-blur-md sm:p-4" onClick={onClose}>
       <div
-        className="bg-card border border-border/60 rounded-t-2xl sm:rounded-2xl w-full max-w-2xl max-h-[92vh] sm:max-h-[90vh] flex flex-col shadow-2xl animate-scale-in"
+        className="bg-card border border-border/60 rounded-t-2xl sm:rounded-2xl w-full max-w-2xl h-[92vh] sm:h-auto sm:max-h-[90vh] flex flex-col shadow-2xl animate-scale-in"
         onClick={(e) => e.stopPropagation()}
         style={{ boxShadow: 'var(--shadow-elevated)' }}
       >
