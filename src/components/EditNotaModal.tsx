@@ -117,137 +117,133 @@ const EditNotaModal = ({ nota, onClose }: EditNotaModalProps) => {
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-background/70 backdrop-blur-md sm:p-4" onClick={onClose}>
       <div
-        className="bg-card border border-border/60 rounded-t-2xl sm:rounded-2xl w-full max-w-2xl max-h-[92vh] sm:max-h-[90vh] overflow-y-auto overscroll-contain p-5 sm:p-7 shadow-2xl animate-scale-in touch-pan-y"
+        className="bg-card border border-border/60 rounded-t-2xl sm:rounded-2xl w-full max-w-2xl max-h-[92vh] sm:max-h-[90vh] flex flex-col shadow-2xl animate-scale-in"
         onClick={(e) => e.stopPropagation()}
-        style={{ boxShadow: 'var(--shadow-elevated)', WebkitOverflowScrolling: 'touch' }}
+        style={{ boxShadow: 'var(--shadow-elevated)' }}
       >
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center justify-between p-5 sm:p-7 pb-0 sm:pb-0">
           <h3 className="text-lg font-bold text-foreground">Editar Nota Fiscal</h3>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Tipo */}
-          <div className="flex gap-2">
-            {(["fornecedor", "servico"] as const).map((tipo) => (
-              <button
-                key={tipo}
-                type="button"
-                onClick={() => setForm((f) => ({ ...f, tipo }))}
-                className={`flex-1 py-3 rounded-xl text-sm font-medium transition-all ${
-                  form.tipo === tipo
-                    ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30"
-                    : "bg-secondary text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {tipo === "fornecedor" ? "Fornecedor" : "Serviço"}
-              </button>
-            ))}
-          </div>
-
-          <input placeholder="Número da NF *" value={form.numero} onChange={(e) => setForm((f) => ({ ...f, numero: e.target.value }))} className={inputClass} />
-
-          {/* Duplicate Warning */}
-          <DuplicateWarning numero={form.numero} fornecedor={form.fornecedor} notas={notas} excludeId={nota.id} />
-          
-          <div>
-            <label className="text-[11px] text-muted-foreground mb-1.5 block font-medium">Fornecedor / Prestador *</label>
-            <FornecedorCombobox
-              value={form.fornecedor}
-              onChange={(nome) => setForm((f) => ({ ...f, fornecedor: nome }))}
-              className={inputClass}
-            />
-          </div>
-
-          <input type="number" step="0.01" placeholder="Valor (R$) *" value={form.valor} onChange={(e) => setForm((f) => ({ ...f, valor: e.target.value }))} className={inputClass} />
-
-          {/* Descrição */}
-          <div className="space-y-2">
-            <textarea
-              placeholder="Descrição"
-              value={form.descricao}
-              onChange={(e) => handleDescricaoChange(e.target.value)}
-              rows={2}
-              className={inputClass + " resize-none"}
-            />
-            {sugestao && (
-              <button
-                type="button"
-                onClick={() => setForm((f) => ({ ...f, setor: sugestao }))}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent/10 text-accent text-xs font-medium animate-fade-in"
-              >
-                <Sparkles className="w-3 h-3" />
-                Sugestão: {sugestao} — clique para aplicar
-              </button>
-            )}
-          </div>
-
-          {/* Setor */}
-          <select value={form.setor} onChange={(e) => setForm((f) => ({ ...f, setor: e.target.value }))} className={inputClass + " appearance-none"}>
-            <option value="">Selecione o setor *</option>
-            {SETORES.map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
-
-          {/* Status */}
-          <select value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as "pendente" | "paga" | "vencida" }))} className={inputClass + " appearance-none"}>
-            <option value="pendente">Pendente</option>
-            <option value="paga">Paga</option>
-            <option value="vencida">Vencida</option>
-          </select>
-
-          {/* Dates */}
-          <div className="grid grid-cols-2 gap-3 overflow-hidden">
-            <div className="min-w-0 overflow-hidden">
-              <label className="text-xs text-muted-foreground mb-1 block">Emissão *</label>
-              <input type="date" value={form.dataEmissao} onChange={(e) => setForm((f) => ({ ...f, dataEmissao: e.target.value }))} className={inputClass + " min-w-0 max-w-full text-xs box-border"} />
-            </div>
-            <div className="min-w-0 overflow-hidden">
-              <label className="text-xs text-muted-foreground mb-1 block">Vencimento *</label>
-              <input type="date" value={form.dataVencimento} onChange={(e) => setForm((f) => ({ ...f, dataVencimento: e.target.value }))} className={inputClass + " min-w-0 max-w-full text-xs box-border"} />
-            </div>
-          </div>
-
-          {/* Attachment section */}
-          <div className="space-y-2">
-            <label className="text-xs text-muted-foreground block">Anexo PDF/XML</label>
-            {nota.attachmentPath && !newAttachment && (
-              <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20">
-                <FileCheck className="w-5 h-5 text-primary flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground">Arquivo anexado ({attachmentExt})</p>
-                </div>
-                <button type="button" onClick={handleDownloadAttachment} disabled={downloading} className="flex items-center gap-1 text-xs text-primary hover:underline flex-shrink-0">
-                  {downloading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
-                  Baixar
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <div className="flex-1 overflow-y-auto overscroll-contain touch-pan-y px-5 sm:px-7 py-4 space-y-4" style={{ WebkitOverflowScrolling: 'touch' }}>
+            {/* Tipo */}
+            <div className="flex gap-2">
+              {(["fornecedor", "servico"] as const).map((tipo) => (
+                <button
+                  key={tipo}
+                  type="button"
+                  onClick={() => setForm((f) => ({ ...f, tipo }))}
+                  className={`flex-1 py-3 rounded-xl text-sm font-medium transition-all ${
+                    form.tipo === tipo
+                      ? "bg-primary text-primary-foreground shadow-md ring-2 ring-primary/30"
+                      : "bg-secondary text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {tipo === "fornecedor" ? "Fornecedor" : "Serviço"}
                 </button>
+              ))}
+            </div>
+
+            <input placeholder="Número da NF *" value={form.numero} onChange={(e) => setForm((f) => ({ ...f, numero: e.target.value }))} className={inputClass} />
+
+            <DuplicateWarning numero={form.numero} fornecedor={form.fornecedor} notas={notas} excludeId={nota.id} />
+            
+            <div>
+              <label className="text-[11px] text-muted-foreground mb-1.5 block font-medium">Fornecedor / Prestador *</label>
+              <FornecedorCombobox
+                value={form.fornecedor}
+                onChange={(nome) => setForm((f) => ({ ...f, fornecedor: nome }))}
+                className={inputClass}
+              />
+            </div>
+
+            <input type="number" step="0.01" placeholder="Valor (R$) *" value={form.valor} onChange={(e) => setForm((f) => ({ ...f, valor: e.target.value }))} className={inputClass} />
+
+            <div className="space-y-2">
+              <textarea
+                placeholder="Descrição"
+                value={form.descricao}
+                onChange={(e) => handleDescricaoChange(e.target.value)}
+                rows={2}
+                className={inputClass + " resize-none"}
+              />
+              {sugestao && (
+                <button
+                  type="button"
+                  onClick={() => setForm((f) => ({ ...f, setor: sugestao }))}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent/10 text-accent text-xs font-medium animate-fade-in"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  Sugestão: {sugestao} — clique para aplicar
+                </button>
+              )}
+            </div>
+
+            <select value={form.setor} onChange={(e) => setForm((f) => ({ ...f, setor: e.target.value }))} className={inputClass + " appearance-none"}>
+              <option value="">Selecione o setor *</option>
+              {SETORES.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+
+            <select value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as "pendente" | "paga" | "vencida" }))} className={inputClass + " appearance-none"}>
+              <option value="pendente">Pendente</option>
+              <option value="paga">Paga</option>
+              <option value="vencida">Vencida</option>
+            </select>
+
+            <div className="grid grid-cols-2 gap-3 overflow-hidden">
+              <div className="min-w-0 overflow-hidden">
+                <label className="text-xs text-muted-foreground mb-1 block">Emissão *</label>
+                <input type="date" value={form.dataEmissao} onChange={(e) => setForm((f) => ({ ...f, dataEmissao: e.target.value }))} className={inputClass + " min-w-0 max-w-full text-xs box-border"} />
               </div>
-            )}
-            {newAttachment ? (
-              <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-success/10 border border-success/20">
-                <FileCheck className="w-5 h-5 text-success flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{newAttachment.name}</p>
-                  <p className="text-[10px] text-muted-foreground">{(newAttachment.size / 1024).toFixed(0)} KB · Será salvo ao confirmar</p>
+              <div className="min-w-0 overflow-hidden">
+                <label className="text-xs text-muted-foreground mb-1 block">Vencimento *</label>
+                <input type="date" value={form.dataVencimento} onChange={(e) => setForm((f) => ({ ...f, dataVencimento: e.target.value }))} className={inputClass + " min-w-0 max-w-full text-xs box-border"} />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs text-muted-foreground block">Anexo PDF/XML</label>
+              {nota.attachmentPath && !newAttachment && (
+                <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20">
+                  <FileCheck className="w-5 h-5 text-primary flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">Arquivo anexado ({attachmentExt})</p>
+                  </div>
+                  <button type="button" onClick={handleDownloadAttachment} disabled={downloading} className="flex items-center gap-1 text-xs text-primary hover:underline flex-shrink-0">
+                    {downloading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />}
+                    Baixar
+                  </button>
                 </div>
-                <button type="button" onClick={() => setNewAttachment(null)} className="text-xs text-destructive hover:underline flex-shrink-0">Remover</button>
-              </div>
-            ) : (
-              <button type="button" onClick={() => document.getElementById("edit-attachment-input")?.click()} className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-secondary text-secondary-foreground text-sm hover:bg-secondary/80 transition-colors">
-                <Paperclip className="w-4 h-4" />
-                {nota.attachmentPath ? "Substituir anexo" : "Anexar arquivo"}
-              </button>
-            )}
-            <input id="edit-attachment-input" type="file" accept=".pdf,.xml" onChange={onAttachmentSelect} className="hidden" />
+              )}
+              {newAttachment ? (
+                <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-success/10 border border-success/20">
+                  <FileCheck className="w-5 h-5 text-success flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{newAttachment.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{(newAttachment.size / 1024).toFixed(0)} KB · Será salvo ao confirmar</p>
+                  </div>
+                  <button type="button" onClick={() => setNewAttachment(null)} className="text-xs text-destructive hover:underline flex-shrink-0">Remover</button>
+                </div>
+              ) : (
+                <button type="button" onClick={() => document.getElementById("edit-attachment-input")?.click()} className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-secondary text-secondary-foreground text-sm hover:bg-secondary/80 transition-colors">
+                  <Paperclip className="w-4 h-4" />
+                  {nota.attachmentPath ? "Substituir anexo" : "Anexar arquivo"}
+                </button>
+              )}
+              <input id="edit-attachment-input" type="file" accept=".pdf,.xml" onChange={onAttachmentSelect} className="hidden" />
+            </div>
+
+            <div className="pt-3 border-t border-border/20">
+              <NotaComments notaId={nota.id} />
+            </div>
           </div>
 
-          {/* Comments Section */}
-          <div className="pt-3 border-t border-border/20">
-            <NotaComments notaId={nota.id} />
-          </div>
-
-          <div className="flex gap-3 pt-2">
+          {/* Fixed footer buttons */}
+          <div className="flex gap-3 p-5 sm:px-7 sm:pb-7 pt-3 border-t border-border/30 bg-card rounded-b-2xl flex-shrink-0">
             <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl bg-secondary text-secondary-foreground font-medium text-sm hover:bg-secondary/80 transition-colors">
               Cancelar
             </button>
