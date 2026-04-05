@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NotaFiscal, SETORES } from "@/types/notaFiscal";
 import { X, Sparkles, Paperclip, FileCheck, Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -104,6 +104,11 @@ const EditNotaModal = ({ nota, onClose }: EditNotaModalProps) => {
     onClose();
   };
 
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
   const inputClass =
     "w-full px-4 py-3 rounded-xl bg-secondary text-foreground text-sm placeholder:text-muted-foreground border-0 outline-none focus:ring-2 focus:ring-primary/30 transition-all [-webkit-appearance:none] [appearance:none]";
 
@@ -112,9 +117,9 @@ const EditNotaModal = ({ nota, onClose }: EditNotaModalProps) => {
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-background/70 backdrop-blur-md sm:p-4" onClick={onClose}>
       <div
-        className="bg-card border border-border/60 rounded-t-2xl sm:rounded-2xl w-full max-w-2xl max-h-[92vh] sm:max-h-[90vh] overflow-y-auto p-5 sm:p-7 shadow-2xl animate-scale-in"
+        className="bg-card border border-border/60 rounded-t-2xl sm:rounded-2xl w-full max-w-2xl max-h-[92vh] sm:max-h-[90vh] overflow-y-auto overscroll-contain p-5 sm:p-7 shadow-2xl animate-scale-in touch-pan-y"
         onClick={(e) => e.stopPropagation()}
-        style={{ boxShadow: 'var(--shadow-elevated)' }}
+        style={{ boxShadow: 'var(--shadow-elevated)', WebkitOverflowScrolling: 'touch' }}
       >
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-bold text-foreground">Editar Nota Fiscal</h3>
